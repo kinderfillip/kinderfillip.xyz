@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Particle Gravity Simulator</title>
+    <title>Mymy Gravity Simulator</title>
     <style>
         body {
             margin: 0;
@@ -32,7 +32,6 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
-            /* Grey border line removed here */
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -105,9 +104,10 @@
             <label>Gravity Pull: <span id="gravity-val">5</span></label>
             <input type="range" id="gravity-strength" min="1" max="15" value="5">
         </div>
+        <!-- New Size Adjustment Slider -->
         <div class="control-group">
-            <label>Friction / Trail: <span id="tail-val">0.12</span></label>
-            <input type="range" id="tail-length" min="0.02" max="0.4" step="0.01" value="0.12">
+            <label>Picture Size: <span id="size-val">55</span></label>
+            <input type="range" id="picture-size" min="15" max="120" value="55">
         </div>
         <button id="clear-btn">Clear Gravity Wells</button>
     </div>
@@ -126,14 +126,20 @@
         let particles = [];
         let wells = [];
 
+        const mymyImg = new Image();
+        mymyImg.src = 'https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png';
+
         const countInput = document.getElementById('particle-count');
         const gravityInput = document.getElementById('gravity-strength');
-        const tailInput = document.getElementById('tail-length');
+        const sizeInput = document.getElementById('picture-size');
         const clearBtn = document.getElementById('clear-btn');
 
         const countVal = document.getElementById('count-val');
         const gravityVal = document.getElementById('gravity-val');
-        const tailVal = document.getElementById('tail-val');
+        const sizeVal = document.getElementById('size-val');
+
+        // Cache the size globally to avoid reading from DOM inside the animation frame
+        let globalSize = parseInt(sizeInput.value);
 
         class Particle {
             constructor() {
@@ -143,13 +149,15 @@
             reset() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                this.color = `hsl(${160 + Math.random() * 60}, 100%, 65%)`;
-                this.size = Math.random() * 1.5 + 0.5;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                // Gives each individual sprite a slightly unique size scaling factor
+                this.sizeModifier = Math.random() * 0.4 + 0.8; 
             }
 
             update(gStrength) {
+                const currentSize = globalSize * this.sizeModifier;
+
                 wells.forEach(well => {
                     const dx = well.x - this.x;
                     const dy = well.y - this.y;
@@ -167,17 +175,25 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
+                // Dynamic wrapping based on current size
+                if (this.x < -currentSize) this.x = width + currentSize;
+                if (this.x > width + currentSize) this.x = -currentSize;
+                if (this.y < -currentSize) this.y = height + currentSize;
+                if (this.y > height + currentSize) this.y = -currentSize;
             }
 
             draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                if (mymyImg.complete) {
+                    const currentSize = globalSize * this.sizeModifier;
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    
+                    const angle = Math.atan2(this.vy, this.vx) + Math.PI / 2;
+                    ctx.rotate(angle);
+                    
+                    ctx.drawImage(mymyImg, -currentSize / 2, -currentSize / 2, currentSize, currentSize);
+                    ctx.restore();
+                }
             }
         }
 
@@ -191,27 +207,52 @@
             }
         }
 
+        gravityInput.addEventListener('input', () => {
+            gravityVal.textContent = gravityInput.value;
+        });
+
+        // Event listener to dynamically update the size values efficiently
+        sizeInput.addEventListener('input', () => {
+            globalSize = parseInt(sizeInput.value);
+            sizeVal.textContent = globalSize;
+        });
+
         adjustParticleCount();
 
         function animate() {
-            const alpha = parseFloat(tailInput.value);
-            tailVal.textContent = alpha;
-            ctx.fillStyle = `rgba(5, 5, 8, ${alpha})`;
+            ctx.fillStyle = '#050508';
             ctx.fillRect(0, 0, width, height);
 
             const gStrength = parseInt(gravityInput.value);
-            gravityVal.textContent = gStrength;
 
+            // Draw Radiant Gravity Wells
             wells.forEach(well => {
+                ctx.save();
+                
                 ctx.beginPath();
-                ctx.arc(well.x, well.y, 6, 0, Math.PI * 2);
+                ctx.arc(well.x, well.y, 12, 0, Math.PI * 2);
                 ctx.fillStyle = '#ff3366';
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = '#ff3366';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(well.x, well.y, 8, 0, Math.PI * 2);
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#ff3366';
                 ctx.fill();
-                ctx.shadowBlur = 0;
+                
+                ctx.beginPath();
+                ctx.arc(well.x, well.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#ffffff';
+                ctx.fill();
+
+                ctx.restore();
             });
 
+            // Update and Draw Mymy Sprites
             particles.forEach(p => {
                 p.update(gStrength);
                 p.draw();
