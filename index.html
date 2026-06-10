@@ -1,7 +1,7 @@
 <img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy">
 <p>This is my new site.</p>
 <p>some jew shit.<p>
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -32,7 +32,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Grey border line removed here */
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -59,7 +59,7 @@
             width: 100%;
             accent-color: #00ffcc;
             cursor: pointer;
-            background: #222;
+            background: #1a1a24;
             height: 6px;
             border-radius: 3px;
             appearance: none;
@@ -120,14 +120,12 @@
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // State setup
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
         let particles = [];
         let wells = [];
 
-        // DOM Controls
         const countInput = document.getElementById('particle-count');
         const gravityInput = document.getElementById('gravity-strength');
         const tailInput = document.getElementById('tail-length');
@@ -137,7 +135,6 @@
         const gravityVal = document.getElementById('gravity-val');
         const tailVal = document.getElementById('tail-val');
 
-        // Particle Blueprint
         class Particle {
             constructor() {
                 this.reset();
@@ -148,35 +145,28 @@
                 this.y = Math.random() * height;
                 this.vx = (Math.random() - 0.5) * 2;
                 this.vy = (Math.random() - 0.5) * 2;
-                this.color = `hsl(${160 + Math.random() * 60}, 100%, 65%)`; // Neon cyan/greens
+                this.color = `hsl(${160 + Math.random() * 60}, 100%, 65%)`;
                 this.size = Math.random() * 1.5 + 0.5;
             }
 
             update(gStrength) {
-                // Calculate pull from every active gravity well
                 wells.forEach(well => {
                     const dx = well.x - this.x;
                     const dy = well.y - this.y;
-                    const distanceSq = dx * dx + dy * dy + 1000; // 1000 softening factor prevents infinity errors
+                    const distanceSq = dx * dx + dy * dy + 1000;
                     const distance = Math.sqrt(distanceSq);
-                    
-                    // Force formula: F = G / r^2
                     const force = (gStrength * 50) / distanceSq;
                     
-                    // Accelerate toward target
                     this.vx += (dx / distance) * force;
                     this.vy += (dy / distance) * force;
                 });
 
-                // Apply light velocity dampening so orbits eventually stabilize/decay
                 this.vx *= 0.995;
                 this.vy *= 0.995;
 
-                // Update position
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Screen boundary wrapping
                 if (this.x < 0) this.x = width;
                 if (this.x > width) this.x = 0;
                 if (this.y < 0) this.y = height;
@@ -191,7 +181,6 @@
             }
         }
 
-        // Setup population
         function adjustParticleCount() {
             const target = parseInt(countInput.value);
             countVal.textContent = target;
@@ -202,12 +191,9 @@
             }
         }
 
-        // Initialize particles
         adjustParticleCount();
 
-        // Animation loop
         function animate() {
-            // Semi-transparent overlay creates the trailing effect
             const alpha = parseFloat(tailInput.value);
             tailVal.textContent = alpha;
             ctx.fillStyle = `rgba(5, 5, 8, ${alpha})`;
@@ -216,7 +202,6 @@
             const gStrength = parseInt(gravityInput.value);
             gravityVal.textContent = gStrength;
 
-            // Draw gravity wells
             wells.forEach(well => {
                 ctx.beginPath();
                 ctx.arc(well.x, well.y, 6, 0, Math.PI * 2);
@@ -224,10 +209,9 @@
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#ff3366';
                 ctx.fill();
-                ctx.shadowBlur = 0; // Reset blur
+                ctx.shadowBlur = 0;
             });
 
-            // Update & Render particles
             particles.forEach(p => {
                 p.update(gStrength);
                 p.draw();
@@ -236,11 +220,8 @@
             requestAnimationFrame(animate);
         }
 
-        // Event Listeners
         window.addEventListener('click', (e) => {
-            // Ignore clicks directly on the control panel
             if (e.target.closest('#controls')) return;
-            
             wells.push({ x: e.clientX, y: e.clientY });
         });
 
@@ -256,7 +237,6 @@
             particles.forEach(p => p.reset());
         });
 
-        // Run Engine
         animate();
     </script>
 </body>
