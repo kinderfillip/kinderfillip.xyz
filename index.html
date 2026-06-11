@@ -27,7 +27,7 @@
             box-sizing: border-box;
         }
 
-        /* Container card to hold everything together */
+        /* Container card */
         .site-card {
             background-color: var(--card-bg);
             border-radius: 16px;
@@ -40,12 +40,6 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .site-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-        }
-
-        /* Small profile/logo image styling */
         .avatar {
             width: 80px;
             height: 80px;
@@ -56,50 +50,269 @@
             box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
         }
 
-        /* Styled paragraph text */
         .site-title {
             font-size: 1.5rem;
             font-weight: 600;
-            margin: 0 0 1.5rem 0;
+            margin: 0 0 1rem 0;
             letter-spacing: -0.5px;
         }
 
-        /* Poster container to fix the vertical overflow */
+        /* Button Container Layout */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .game-btn:hover {
+            background-color: #ff6b7b;
+        }
+
+        .game-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Secondary Exit Button Style */
+        .exit-btn {
+            background-color: #29292e;
+            color: var(--text-secondary);
+            border: 1px solid #3e3e44;
+            display: none; /* Hidden by default */
+        }
+
+        .exit-btn:hover {
+            background-color: #3e3e44;
+            color: white;
+        }
+
+        /* Poster container */
         .poster-container {
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             background: #000;
-            line-height: 0; /* Fixes tiny white gap under image */
+            line-height: 0;
         }
 
-        /* Responsive image styling */
         .poster {
             width: 100%;
             height: auto;
             max-height: 450px;
             object-fit: cover;
-            transition: transform 0.5s ease;
         }
 
-        .poster-container:hover .poster {
-            transform: scale(1.03);
+        /* Snake Game Layout */
+        #game-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #111;
+            border: 2px solid #29292e;
+            border-radius: 8px;
+        }
+
+        #score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
 
     <div class="site-card">
-        <!-- Your top image treated as a clean profile avatar -->
-        <img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy" class="avatar">
+        <img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy" class="avatar" id="mymy-pic">
         
         <p class="site-title">This is my new site.</p>
         
-        <!-- Wrapped the movie poster to tame the overflow -->
-        <div class="poster-container">
+        <!-- Button Menu Controls -->
+        <div class="btn-group">
+            <button class="game-btn" id="start-btn">Play Mymy Snake</button>
+            <button class="game-btn exit-btn" id="exit-btn">Exit Game</button>
+        </div>
+        
+        <!-- Movie Poster -->
+        <div class="poster-container" id="poster-box">
             <img src="https://static.wikitide.net/nexuswiki/e/e6/Ongezellig_The_Movie_%282025%29_poster.jpg" alt="Ongezellig The Movie Poster" class="poster">
+        </div>
+
+        <!-- Hidden Game Area -->
+        <div id="game-area">
+            <canvas id="gameCanvas" width="300" height="300"></canvas>
+            <div id="score">Score: 0</div>
         </div>
     </div>
 
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const exitBtn = document.getElementById('exit-btn');
+        const posterBox = document.getElementById('poster-box');
+        const gameArea = document.getElementById('game-area');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+
+        // Load Mymy's face for the snake head
+        const mymyHeadImg = new Image();
+        mymyHeadImg.src = 'https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png';
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let dx = gridSize;
+        let dy = 0;
+        let score = 0;
+        let gameInterval = null;
+        let changingDirection = false;
+
+        // Start / Restart Game Event
+        startBtn.addEventListener('click', () => {
+            posterBox.style.display = 'none';
+            gameArea.style.display = 'flex';
+            exitBtn.style.display = 'inline-block'; // Show the exit button
+            startBtn.innerText = 'Restart Game';
+            
+            resetGame();
+        });
+
+        // Exit Game Event
+        exitBtn.addEventListener('click', () => {
+            clearInterval(gameInterval); // Stop the loop completely
+            
+            // Toggle visual modules back to default state
+            gameArea.style.display = 'none';
+            exitBtn.style.display = 'none';
+            posterBox.style.display = 'block';
+            
+            startBtn.innerText = 'Play Mymy Snake';
+        });
+
+        function resetGame() {
+            clearInterval(gameInterval);
+            snake = [
+                { x: gridSize * 5, y: gridSize * 5 },
+                { x: gridSize * 4, y: gridSize * 5 },
+                { x: gridSize * 3, y: gridSize * 5 }
+            ];
+            dx = gridSize;
+            dy = 0;
+            score = 0;
+            scoreDisplay.innerText = "Score: " + score;
+            spawnFood();
+            gameInterval = setInterval(updateGame, 100);
+        }
+
+        function updateGame() {
+            if (hasGameEnded()) {
+                clearInterval(gameInterval);
+                scoreDisplay.innerText = "Game Over! Final Score: " + score;
+                return;
+            }
+
+            changingDirection = false;
+            clearCanvas();
+            drawFood();
+            moveSnake();
+            drawSnake();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSnake() {
+            snake.forEach((part, index) => {
+                if (index === 0) {
+                    ctx.drawImage(mymyHeadImg, part.x, part.y, gridSize, gridSize);
+                } else {
+                    ctx.fillStyle = '#ff4757';
+                    ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
+                }
+            });
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreDisplay.innerText = "Score: " + score;
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * tileCount) * gridSize;
+            food.y = Math.floor(Math.random() * tileCount) * gridSize;
+
+            snake.forEach(part => {
+                if (part.x === food.x && part.y === food.y) spawnFood();
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = '#ffca28';
+            ctx.beginPath();
+            ctx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function hasGameEnded() {
+            for (let i = 4; i < snake.length; i++) {
+                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+            }
+            const hitLeftWall = snake[0].x < 0;
+            const hitRightWall = snake[0].x >= canvas.width;
+            const hitToptWall = snake[0].y < 0;
+            const hitBottomWall = snake[0].y >= canvas.height;
+            return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (changingDirection) return;
+
+            const keyPressed = e.key;
+            const goingUp = dy === -gridSize;
+            const goingDown = dy === gridSize;
+            const goingRight = dx === gridSize;
+            const goingLeft = dx === -gridSize;
+
+            if ((keyPressed === 'ArrowLeft' || keyPressed === 'a') && !goingRight) {
+                dx = -gridSize; dy = 0; changingDirection = true; e.preventDefault();
+            }
+            if ((keyPressed === 'ArrowUp' || keyPressed === 'w') && !goingDown) {
+                dx = 0; dy = -gridSize; changingDirection = true; e.preventDefault();
+            }
+            if ((keyPressed === 'ArrowRight' || keyPressed === 'd') && !goingLeft) {
+                dx = gridSize; dy = 0; changingDirection = true; e.preventDefault();
+            }
+            if ((keyPressed === 'ArrowDown' || keyPressed === 's') && !goingUp) {
+                dx = 0; dy = gridSize; changingDirection = true; e.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>
