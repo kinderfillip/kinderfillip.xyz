@@ -1,3 +1,105 @@
-<img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy">
-<p>This is my new site.</p>
-<img src="https://static.wikitide.net/nexuswiki/e/e6/Ongezellig_The_Movie_%282025%29_poster.jpg" alt="https://static.wikitide.net/nexuswiki/e/e6/Ongezellig_The_Movie_%282025%29_poster.jpg" class="overflowingVertical">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My New Site</title>
+    <style>
+        /* Modern reset and custom variables */
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --text-color: #e1e1e6;
+            --accent-color: #ff4757;
+            --text-secondary: #a8a8b3;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Container card to hold everything together */
+        .site-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #29292e;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .site-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Small profile/logo image styling */
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent-color);
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
+        }
+
+        /* Styled paragraph text */
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* Poster container to fix the vertical overflow */
+        .poster-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            background: #000;
+            line-height: 0; /* Fixes tiny white gap under image */
+        }
+
+        /* Responsive image styling */
+        .poster {
+            width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .poster-container:hover .poster {
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="site-card">
+        <!-- Your top image treated as a clean profile avatar -->
+        <img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy" class="avatar">
+        
+        <p class="site-title">This is my new site.</p>
+        
+        <!-- Wrapped the movie poster to tame the overflow -->
+        <div class="poster-container">
+            <img src="https://static.wikitide.net/nexuswiki/e/e6/Ongezellig_The_Movie_%282025%29_poster.jpg" alt="Ongezellig The Movie Poster" class="poster">
+        </div>
+    </div>
+
+</body>
+</html>
