@@ -116,6 +116,29 @@
             margin: 0;
         }
 
+        .social-links {
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .social-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: #e08fa3;
+        }
+
+        .social-dot {
+            color: var(--border-soft);
+        }
+
         .btn-group {
             display: flex;
             gap: 12px;
@@ -252,15 +275,15 @@
             <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" alt="Kaworu" id="kaworu-pic">
         </div>
         <div class="hero-overlay">
-            <h1>Kaworu</h1>
-            <p>A little corner for the games and the gallery.</p>
+            <h1>About</h1>
+            <p>site made by @Kindest_fillip on Instagram/TikTok</p>
         </div>
 
         <div class="content-panel">
             <div id="intro-content" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                 <span class="eyebrow">Welcome</span>
                 <p class="site-title">This is my new site.</p>
-                <p class="description">Take a break and play a quick round of Kaworu Snake or classic Tetris.</p>
+                <p class="description">More stuff coming eventually</p>
                 <div class="btn-group">
                     <button class="game-btn" id="start-snake-btn">Play Snake</button>
                     <button class="game-btn tetris-btn" id="start-tetris-btn">Play Tetris</button>
@@ -288,6 +311,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="social-links">
+            <a href="https://www.instagram.com/kindest_fillip?igsh=MWk4eXYzYmltZWo3" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <span class="social-dot">·</span>
+            <a href="https://tiktok.com/@kindest_fillip" target="_blank" rel="noopener noreferrer">TikTok</a>
         </div>
     </div>
 
