@@ -26,10 +26,10 @@
             min-height: 100vh;
         }
 
-        /* Split-screen layout */
+        /* Sidebar layout: small image panel + wide content panel */
         .layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 300px 1fr;
             min-height: 100vh;
         }
 
@@ -39,6 +39,9 @@
             display: flex;
             align-items: flex-end;
             overflow: hidden;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
 
         .hero-panel img {
@@ -54,12 +57,12 @@
             position: relative;
             z-index: 2;
             width: 100%;
-            padding: 2rem;
+            padding: 1.5rem;
             background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
         }
 
         .hero-overlay h1 {
-            font-size: 2rem;
+            font-size: 1.6rem;
             margin: 0;
             letter-spacing: -1px;
         }
@@ -67,14 +70,16 @@
         .hero-overlay p {
             color: var(--text-secondary);
             margin: 0.4rem 0 0 0;
+            font-size: 0.9rem;
         }
 
         .content-panel {
-            padding: 3rem 2.5rem;
+            padding: 3rem 4rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             gap: 1.5rem;
+            max-width: 900px;
         }
 
         .content-panel .eyebrow {
@@ -86,7 +91,7 @@
         }
 
         .content-panel .site-title {
-            font-size: 1.6rem;
+            font-size: 2rem;
             font-weight: 600;
             margin: 0;
         }
@@ -94,7 +99,7 @@
         .content-panel .description {
             color: var(--text-secondary);
             line-height: 1.6;
-            max-width: 420px;
+            max-width: 480px;
         }
 
         .btn-group {
@@ -214,8 +219,8 @@
 
         @media (max-width: 800px) {
             .layout { grid-template-columns: 1fr; }
-            .hero-panel { height: 40vh; }
-            .content-panel { padding: 2rem 1.5rem; }
+            .hero-panel { height: 35vh; position: relative; top: auto; }
+            .content-panel { padding: 2rem 1.5rem; max-width: 100%; }
             .d-pad {
                 grid-template-columns: 50px 50px 50px;
                 grid-template-rows: 50px 50px 50px;
