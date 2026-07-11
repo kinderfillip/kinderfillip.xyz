@@ -3,316 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My New Site</title>
+    <title>Kaworu's Site</title>
     <style>
-        /* Modern reset and custom variables */
         :root {
-            --bg-color: #121214;
-            --card-bg: #1a1a1e;
-            --text-color: #e1e1e6;
+            --bg-color: #0d0d10;
+            --panel-bg: #17171b;
+            --text-color: #f0f0f4;
             --accent-color: #ff4757;
-            --text-secondary: #a8a8b3;
+            --accent-glow: rgba(255, 71, 87, 0.35);
+            --tetris-color: #4775ff;
+            --tetris-glow: rgba(71, 117, 255, 0.35);
+            --text-secondary: #9797a3;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 2rem 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
         }
 
-        /* Container card */
-        .site-card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            padding: 2.5rem;
-            max-width: 400px;
+        /* Split-screen layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+        }
+
+        .hero-panel {
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .hero-panel img {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            text-align: center;
-            border: 1px solid #29292e;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
+            height: 100%;
             object-fit: cover;
-            border: 3px solid var(--accent-color);
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
+            filter: saturate(1.05);
         }
 
-        .site-title {
-            font-size: 1.5rem;
+        .hero-overlay {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+        }
+
+        .hero-overlay h1 {
+            font-size: 2rem;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        .hero-overlay p {
+            color: var(--text-secondary);
+            margin: 0.4rem 0 0 0;
+        }
+
+        .content-panel {
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .content-panel .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .content-panel .site-title {
+            font-size: 1.6rem;
             font-weight: 600;
-            margin: 0 0 1rem 0;
-            letter-spacing: -0.5px;
+            margin: 0;
         }
 
-        /* Button Container Layout */
+        .content-panel .description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 420px;
+        }
+
         .btn-group {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 1.5rem;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .game-btn {
             background-color: var(--accent-color);
             color: white;
             border: none;
-            padding: 0.6rem 1.2rem;
+            padding: 0.75rem 1.5rem;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 6px 16px var(--accent-glow);
             transition: background 0.2s, transform 0.1s;
         }
 
-        .game-btn:hover {
-            background-color: #ff6b7b;
-        }
+        .game-btn:hover { background-color: #ff6b7b; }
+        .game-btn:active { transform: scale(0.95); }
 
-        .game-btn:active {
-            transform: scale(0.95);
+        .tetris-btn {
+            background-color: var(--tetris-color);
+            box-shadow: 0 6px 16px var(--tetris-glow);
         }
+        .tetris-btn:hover { background-color: #668dff; }
 
-        /* Secondary Exit Button Style */
         .exit-btn {
-            background-color: #29292e;
+            background-color: #232328;
             color: var(--text-secondary);
-            border: 1px solid #3e3e44;
-            display: none; /* Hidden by default */
+            border: 1px solid #34343b;
+            box-shadow: none;
         }
+        .exit-btn:hover { background-color: #34343b; color: white; }
 
-        .exit-btn:hover {
-            background-color: #3e3e44;
-            color: white;
-        }
-
-        /* Poster container */
-        .poster-container {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-            background: #000;
-            line-height: 0;
-        }
-
-        .poster {
-            width: 100%;
-            height: auto;
-            max-height: 450px;
-            object-fit: cover;
-        }
-
-        /* Snake Game Layout */
+        /* Game area */
         #game-area {
             display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .game-frame {
+            padding: 1rem;
+            background: var(--panel-bg);
+            border-radius: 14px;
+            border: 1px solid #2a2a30;
+            display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         canvas {
             background-color: #111;
-            border: 2px solid #29292e;
             border-radius: 8px;
+            display: block;
+            touch-action: none;
+        }
+
+        #tetrisCanvas {
+            display: none; /* Hidden by default, toggled in JS */
+        }
+
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
         }
 
         #score {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            margin-top: 0.5rem;
             color: var(--text-secondary);
+        }
+
+        /* Mobile Controls (D-Pad) */
+        .d-pad {
+            display: grid;
+            grid-template-columns: 55px 55px 55px;
+            grid-template-rows: 55px 55px 55px;
+            gap: 8px;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .d-pad-btn {
+            background-color: #232328;
+            color: var(--text-secondary);
+            border: 1px solid #34343b;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background 0.1s, color 0.1s;
+        }
+
+        .d-pad-btn:active {
+            background-color: var(--text-color);
+            color: #000;
+            border-color: var(--text-color);
+        }
+
+        .d-pad .up { grid-column: 2; grid-row: 1; }
+        .d-pad .left { grid-column: 1; grid-row: 2; }
+        .d-pad .right { grid-column: 3; grid-row: 2; }
+        .d-pad .down { grid-column: 2; grid-row: 3; }
+
+        @media (max-width: 800px) {
+            .layout { grid-template-columns: 1fr; }
+            .hero-panel { height: 40vh; }
+            .content-panel { padding: 2rem 1.5rem; }
+            .d-pad {
+                grid-template-columns: 50px 50px 50px;
+                grid-template-rows: 50px 50px 50px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="site-card">
-        <img src="https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png" alt="mymy" class="avatar" id="mymy-pic">
-        
-        <p class="site-title">This is my new site.</p>
-        
-        <!-- Button Menu Controls -->
-        <div class="btn-group">
-            <button class="game-btn" id="start-btn">Play Mymy Snake</button>
-            <button class="game-btn exit-btn" id="exit-btn">Exit Game</button>
-        </div>
-        
-        <!-- Movie Poster -->
-        <div class="poster-container" id="poster-box">
-            <img src="https://static.wikitide.net/nexuswiki/e/e6/Ongezellig_The_Movie_%282025%29_poster.jpg" alt="Ongezellig The Movie Poster" class="poster">
+    <div class="layout">
+        <div class="hero-panel">
+            <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" alt="Kaworu" id="kaworu-pic">
+            <div class="hero-overlay">
+                <h1>Kaworu</h1>
+                <p>A little corner for the games and the gallery.</p>
+            </div>
         </div>
 
-        <!-- Hidden Game Area -->
-        <div id="game-area">
-            <canvas id="gameCanvas" width="300" height="300"></canvas>
-            <div id="score">Score: 0</div>
+        <div class="content-panel">
+            <div id="intro-content">
+                <span class="eyebrow">Welcome</span>
+                <p class="site-title">This is my new site.</p>
+                <p class="description">Take a break and play a quick round of Kaworu Snake or classic Tetris.</p>
+                <div class="btn-group">
+                    <button class="game-btn" id="start-snake-btn">Play Snake</button>
+                    <button class="game-btn tetris-btn" id="start-tetris-btn">Play Tetris</button>
+                </div>
+            </div>
+
+            <div id="game-area">
+                <div class="btn-group" style="margin-bottom: 0.5rem;">
+                    <button class="game-btn" id="restart-btn">Restart Game</button>
+                    <button class="game-btn exit-btn" id="exit-btn">Exit Game</button>
+                </div>
+                <div class="game-frame">
+                    <div class="game-header">
+                        <div id="score">Score: 0</div>
+                    </div>
+                    
+                    <canvas id="gameCanvas" width="300" height="300"></canvas>
+                    <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+                    
+                    <div class="d-pad">
+                        <button class="d-pad-btn up" id="btn-up">▲</button>
+                        <button class="d-pad-btn left" id="btn-left">◄</button>
+                        <button class="d-pad-btn right" id="btn-right">►</button>
+                        <button class="d-pad-btn down" id="btn-down">▼</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const startBtn = document.getElementById('start-btn');
+        // --- GLOBAL UI CONTROLS ---
+        const startSnakeBtn = document.getElementById('start-snake-btn');
+        const startTetrisBtn = document.getElementById('start-tetris-btn');
+        const restartBtn = document.getElementById('restart-btn');
         const exitBtn = document.getElementById('exit-btn');
-        const posterBox = document.getElementById('poster-box');
+        
+        const introContent = document.getElementById('intro-content');
         const gameArea = document.getElementById('game-area');
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
         const scoreDisplay = document.getElementById('score');
 
-        // Load Mymy's face for the snake head
-        const mymyHeadImg = new Image();
-        mymyHeadImg.src = 'https://static.wikia.nocookie.net/ongezellig/images/4/42/Mymyhome.png';
+        let activeGame = null; // 'snake' or 'tetris'
 
-        const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
+        // --- SNAKE SETUP ---
+        const sCanvas = document.getElementById('gameCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        const sGridSize = 20;
+        const sTileCount = sCanvas.width / sGridSize;
+
+        const kaworuHeadImg = new Image();
+        let imageLoaded = false;
+        kaworuHeadImg.onload = () => { imageLoaded = true; };
+        kaworuHeadImg.src = 'https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg';
+
+        let snake = [], food = {x:0, y:0}, dx = sGridSize, dy = 0, sScore = 0;
+        let sInterval = null, changingDirection = false;
+
+        // --- TETRIS SETUP ---
+        const tCanvas = document.getElementById('tetrisCanvas');
+        const tCtx = tCanvas.getContext('2d');
+        const tGridSize = 20; // 10 columns x 20 rows
         
-        let snake = [];
-        let food = { x: 0, y: 0 };
-        let dx = gridSize;
-        let dy = 0;
-        let score = 0;
-        let gameInterval = null;
-        let changingDirection = false;
+        const tColors = {
+            'I': '#00f0ff', 'J': '#4775ff', 'L': '#ffaa00', 'O': '#ffea00',
+            'S': '#00ff77', 'Z': '#ff4757', 'T': '#cc44ff'
+        };
+        const tetrominoes = {
+            'I': [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+            'J': [[1,0,0],[1,1,1],[0,0,0]],
+            'L': [[0,0,1],[1,1,1],[0,0,0]],
+            'O': [[1,1],[1,1]],
+            'S': [[0,1,1],[1,1,0],[0,0,0]],
+            'Z': [[1,1,0],[0,1,1],[0,0,0]],
+            'T': [[0,1,0],[1,1,1],[0,0,0]]
+        };
 
-        // Start / Restart Game Event
-        startBtn.addEventListener('click', () => {
-            posterBox.style.display = 'none';
+        let tGrid = [], activeTetromino = null, tScore = 0, tInterval = null;
+
+        // --- NAVIGATION LOGIC ---
+        startSnakeBtn.addEventListener('click', () => {
+            activeGame = 'snake';
+            sCanvas.style.display = 'block';
+            tCanvas.style.display = 'none';
+            introContent.style.display = 'none';
             gameArea.style.display = 'flex';
-            exitBtn.style.display = 'inline-block'; // Show the exit button
-            startBtn.innerText = 'Restart Game';
-            
-            resetGame();
+            resetSnake();
         });
 
-        // Exit Game Event
+        startTetrisBtn.addEventListener('click', () => {
+            activeGame = 'tetris';
+            sCanvas.style.display = 'none';
+            tCanvas.style.display = 'block';
+            introContent.style.display = 'none';
+            gameArea.style.display = 'flex';
+            resetTetris();
+        });
+
         exitBtn.addEventListener('click', () => {
-            clearInterval(gameInterval); // Stop the loop completely
-            
-            // Toggle visual modules back to default state
+            clearInterval(sInterval);
+            clearInterval(tInterval);
+            activeGame = null;
             gameArea.style.display = 'none';
-            exitBtn.style.display = 'none';
-            posterBox.style.display = 'block';
-            
-            startBtn.innerText = 'Play Mymy Snake';
+            introContent.style.display = 'block';
         });
 
-        function resetGame() {
-            clearInterval(gameInterval);
-            snake = [
-                { x: gridSize * 5, y: gridSize * 5 },
-                { x: gridSize * 4, y: gridSize * 5 },
-                { x: gridSize * 3, y: gridSize * 5 }
-            ];
-            dx = gridSize;
-            dy = 0;
-            score = 0;
-            scoreDisplay.innerText = "Score: " + score;
-            spawnFood();
-            gameInterval = setInterval(updateGame, 100);
+        restartBtn.addEventListener('click', () => {
+            if (activeGame === 'snake') resetSnake();
+            else if (activeGame === 'tetris') resetTetris();
+        });
+
+        // --- INPUT ROUTING ---
+        function handleInput(direction) {
+            if (activeGame === 'snake') handleSnakeInput(direction);
+            else if (activeGame === 'tetris') handleTetrisInput(direction);
         }
 
-        function updateGame() {
-            if (hasGameEnded()) {
-                clearInterval(gameInterval);
-                scoreDisplay.innerText = "Game Over! Final Score: " + score;
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].indexOf(e.code) > -1) e.preventDefault();
+            const k = e.key;
+            if (k === 'ArrowLeft' || k === 'a') handleInput('left');
+            if (k === 'ArrowUp' || k === 'w') handleInput('up');
+            if (k === 'ArrowRight' || k === 'd') handleInput('right');
+            if (k === 'ArrowDown' || k === 's') handleInput('down');
+        });
+
+        document.getElementById('btn-up').addEventListener('pointerdown', (e) => { e.preventDefault(); handleInput('up'); });
+        document.getElementById('btn-left').addEventListener('pointerdown', (e) => { e.preventDefault(); handleInput('left'); });
+        document.getElementById('btn-right').addEventListener('pointerdown', (e) => { e.preventDefault(); handleInput('right'); });
+        document.getElementById('btn-down').addEventListener('pointerdown', (e) => { e.preventDefault(); handleInput('down'); });
+
+        // --- SNAKE LOGIC ---
+        function resetSnake() {
+            clearInterval(sInterval);
+            snake = [{x: sGridSize*5, y: sGridSize*5}, {x: sGridSize*4, y: sGridSize*5}, {x: sGridSize*3, y: sGridSize*5}];
+            dx = sGridSize; dy = 0; sScore = 0;
+            scoreDisplay.innerText = "Score: " + sScore;
+            spawnFood();
+            sInterval = setInterval(updateSnake, 100);
+        }
+
+        function handleSnakeInput(dir) {
+            if (changingDirection) return;
+            const up = dy === -sGridSize, down = dy === sGridSize, right = dx === sGridSize, left = dx === -sGridSize;
+            if (dir === 'left' && !right) { dx = -sGridSize; dy = 0; changingDirection = true; }
+            if (dir === 'up' && !down) { dx = 0; dy = -sGridSize; changingDirection = true; }
+            if (dir === 'right' && !left) { dx = sGridSize; dy = 0; changingDirection = true; }
+            if (dir === 'down' && !up) { dx = 0; dy = sGridSize; changingDirection = true; }
+        }
+
+        function updateSnake() {
+            if (sHitWall()) {
+                clearInterval(sInterval);
+                scoreDisplay.innerText = "Game Over! Final Score: " + sScore;
                 return;
             }
-
             changingDirection = false;
-            clearCanvas();
-            drawFood();
-            moveSnake();
-            drawSnake();
-        }
+            sCtx.fillStyle = '#111';
+            sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+            
+            // Draw Food
+            sCtx.fillStyle = '#ffca28';
+            sCtx.beginPath();
+            sCtx.arc(food.x + sGridSize/2, food.y + sGridSize/2, sGridSize/2 - 2, 0, 2 * Math.PI);
+            sCtx.fill();
 
-        function clearCanvas() {
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawSnake() {
-            snake.forEach((part, index) => {
-                if (index === 0) {
-                    ctx.drawImage(mymyHeadImg, part.x, part.y, gridSize, gridSize);
-                } else {
-                    ctx.fillStyle = '#ff4757';
-                    ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
-                }
-            });
-        }
-
-        function moveSnake() {
+            // Move & Draw Snake
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
             snake.unshift(head);
-
             if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                scoreDisplay.innerText = "Score: " + score;
+                sScore += 10;
+                scoreDisplay.innerText = "Score: " + sScore;
                 spawnFood();
             } else {
                 snake.pop();
             }
-        }
 
-        function spawnFood() {
-            food.x = Math.floor(Math.random() * tileCount) * gridSize;
-            food.y = Math.floor(Math.random() * tileCount) * gridSize;
-
-            snake.forEach(part => {
-                if (part.x === food.x && part.y === food.y) spawnFood();
+            snake.forEach((part, index) => {
+                if (index === 0) {
+                    if (imageLoaded) sCtx.drawImage(kaworuHeadImg, part.x, part.y, sGridSize, sGridSize);
+                    else { sCtx.fillStyle = '#fff'; sCtx.fillRect(part.x, part.y, sGridSize, sGridSize); }
+                } else {
+                    sCtx.fillStyle = '#ff4757';
+                    sCtx.fillRect(part.x, part.y, sGridSize - 2, sGridSize - 2);
+                }
             });
         }
 
-        function drawFood() {
-            ctx.fillStyle = '#ffca28';
-            ctx.beginPath();
-            ctx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, 2 * Math.PI);
-            ctx.fill();
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * sTileCount) * sGridSize;
+            food.y = Math.floor(Math.random() * sTileCount) * sGridSize;
+            snake.forEach(part => { if (part.x === food.x && part.y === food.y) spawnFood(); });
         }
 
-        function hasGameEnded() {
+        function sHitWall() {
             for (let i = 4; i < snake.length; i++) {
                 if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
             }
-            const hitLeftWall = snake[0].x < 0;
-            const hitRightWall = snake[0].x >= canvas.width;
-            const hitToptWall = snake[0].y < 0;
-            const hitBottomWall = snake[0].y >= canvas.height;
-            return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+            return snake[0].x < 0 || snake[0].x >= sCanvas.width || snake[0].y < 0 || snake[0].y >= sCanvas.height;
         }
 
-        window.addEventListener('keydown', (e) => {
-            if (changingDirection) return;
+        // --- TETRIS LOGIC ---
+        function resetTetris() {
+            clearInterval(tInterval);
+            tGrid = Array.from({length: 20}, () => Array(10).fill(0));
+            tScore = 0;
+            scoreDisplay.innerText = "Score: " + tScore;
+            spawnTetromino();
+            tInterval = setInterval(updateTetris, 400);
+            drawTetris();
+        }
 
-            const keyPressed = e.key;
-            const goingUp = dy === -gridSize;
-            const goingDown = dy === gridSize;
-            const goingRight = dx === gridSize;
-            const goingLeft = dx === -gridSize;
+        function spawnTetromino() {
+            const keys = Object.keys(tetrominoes);
+            const type = keys[Math.floor(Math.random() * keys.length)];
+            activeTetromino = { matrix: tetrominoes[type], name: type, row: 0, col: 3 };
+            
+            if (!isValidMove(activeTetromino.matrix, activeTetromino.row, activeTetromino.col)) {
+                clearInterval(tInterval);
+                scoreDisplay.innerText = "Game Over! Final Score: " + tScore;
+            }
+        }
 
-            if ((keyPressed === 'ArrowLeft' || keyPressed === 'a') && !goingRight) {
-                dx = -gridSize; dy = 0; changingDirection = true; e.preventDefault();
+        function handleTetrisInput(dir) {
+            if (!activeTetromino) return;
+            if (dir === 'left' && isValidMove(activeTetromino.matrix, activeTetromino.row, activeTetromino.col - 1)) {
+                activeTetromino.col--;
             }
-            if ((keyPressed === 'ArrowUp' || keyPressed === 'w') && !goingDown) {
-                dx = 0; dy = -gridSize; changingDirection = true; e.preventDefault();
+            if (dir === 'right' && isValidMove(activeTetromino.matrix, activeTetromino.row, activeTetromino.col + 1)) {
+                activeTetromino.col++;
             }
-            if ((keyPressed === 'ArrowRight' || keyPressed === 'd') && !goingLeft) {
-                dx = gridSize; dy = 0; changingDirection = true; e.preventDefault();
+            if (dir === 'down' && isValidMove(activeTetromino.matrix, activeTetromino.row + 1, activeTetromino.col)) {
+                activeTetromino.row++;
             }
-            if ((keyPressed === 'ArrowDown' || keyPressed === 's') && !goingUp) {
-                dx = 0; dy = gridSize; changingDirection = true; e.preventDefault();
+            if (dir === 'up') {
+                // Rotate
+                const rotated = activeTetromino.matrix.map((val, index) => activeTetromino.matrix.map(row => row[index]).reverse());
+                if (isValidMove(rotated, activeTetromino.row, activeTetromino.col)) {
+                    activeTetromino.matrix = rotated;
+                }
             }
-        });
+            drawTetris();
+        }
+
+        function isValidMove(matrix, row, col) {
+            for (let r = 0; r < matrix.length; r++) {
+                for (let c = 0; c < matrix[r].length; c++) {
+                    if (matrix[r][c]) {
+                        const newRow = row + r;
+                        const newCol = col + c;
+                        if (newRow < 0 || newRow >= 20 || newCol < 0 || newCol >= 10 || (newRow >= 0 && tGrid[newRow][newCol])) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function updateTetris() {
+            if (isValidMove(activeTetromino.matrix, activeTetromino.row + 1, activeTetromino.col)) {
+                activeTetromino.row++;
+            } else {
+                placeTetromino();
+                clearLines();
+                spawnTetromino();
+            }
+            drawTetris();
+        }
+
+        function placeTetromino() {
+            for (let r = 0; r < activeTetromino.matrix.length; r++) {
+                for (let c = 0; c < activeTetromino.matrix[r].length; c++) {
+                    if (activeTetromino.matrix[r][c] && activeTetromino.row + r >= 0) {
+                        tGrid[activeTetromino.row + r][activeTetromino.col + c] = activeTetromino.name;
+                    }
+                }
+            }
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            for (let r = 19; r >= 0; r--) {
+                if (tGrid[r].every(cell => cell !== 0)) {
+                    tGrid.splice(r, 1);
+                    tGrid.unshift(Array(10).fill(0));
+                    linesCleared++;
+                    r++; // Check this row again since everything shifted down
+                }
+            }
+            if (linesCleared > 0) {
+                tScore += (linesCleared * 100);
+                scoreDisplay.innerText = "Score: " + tScore;
+            }
+        }
+
+        function drawTetris() {
+            tCtx.fillStyle = '#111';
+            tCtx.fillRect(0, 0, tCanvas.width, tCanvas.height);
+            
+            // Draw settled blocks
+            for (let r = 0; r < 20; r++) {
+                for (let c = 0; c < 10; c++) {
+                    if (tGrid[r][c]) {
+                        tCtx.fillStyle = tColors[tGrid[r][c]];
+                        tCtx.fillRect(c * tGridSize, r * tGridSize, tGridSize - 1, tGridSize - 1);
+                    }
+                }
+            }
+            
+            // Draw active block
+            if (activeTetromino) {
+                tCtx.fillStyle = tColors[activeTetromino.name];
+                for (let r = 0; r < activeTetromino.matrix.length; r++) {
+                    for (let c = 0; c < activeTetromino.matrix[r].length; c++) {
+                        if (activeTetromino.matrix[r][c]) {
+                            tCtx.fillRect((activeTetromino.col + c) * tGridSize, (activeTetromino.row + r) * tGridSize, tGridSize - 1, tGridSize - 1);
+                        }
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>
