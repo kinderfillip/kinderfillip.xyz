@@ -6,42 +6,49 @@
     <title>Kaworu's Site</title>
     <style>
         :root {
-            --bg-color: #0d0d10;
-            --panel-bg: #17171b;
-            --text-color: #f0f0f4;
-            --accent-color: #ff4757;
-            --accent-glow: rgba(255, 71, 87, 0.35);
-            --tetris-color: #4775ff;
-            --tetris-glow: rgba(71, 117, 255, 0.35);
-            --text-secondary: #9797a3;
+            --bg-color: #faf6f2;
+            --panel-bg: #ffffff;
+            --text-color: #4a4458;
+            --accent-color: #f4a6b7;
+            --accent-glow: rgba(244, 166, 183, 0.45);
+            --tetris-color: #a6c8f4;
+            --tetris-glow: rgba(166, 200, 244, 0.45);
+            --text-secondary: #a89bb3;
+            --border-soft: #f0e6f0;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
         }
 
-        /* Sidebar layout: small image panel + wide content panel */
+        /* Centered card layout */
         .layout {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            min-height: 100vh;
+            width: 100%;
+            max-width: 640px;
+            padding: 3rem 1.5rem 4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .hero-panel {
             position: relative;
-            background: #000;
-            display: flex;
-            align-items: flex-end;
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1 / 1;
+            border-radius: 32px;
             overflow: hidden;
-            height: 100vh;
-            position: sticky;
-            top: 0;
+            box-shadow: 0 16px 40px rgba(74, 68, 88, 0.14);
+            margin-bottom: 0;
         }
 
         .hero-panel img {
@@ -50,115 +57,126 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: saturate(1.05);
+            filter: saturate(0.95) brightness(1.03);
         }
 
         .hero-overlay {
-            position: relative;
-            z-index: 2;
             width: 100%;
-            padding: 1.5rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+            max-width: 320px;
+            margin: 0.75rem auto 1.75rem;
+            padding: 0.9rem 1.1rem;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.75);
+            box-shadow: 0 8px 20px rgba(74, 68, 88, 0.08);
+            text-align: left;
         }
 
         .hero-overlay h1 {
-            font-size: 1.6rem;
+            font-size: 1.25rem;
             margin: 0;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
+            color: var(--text-color);
         }
 
         .hero-overlay p {
             color: var(--text-secondary);
-            margin: 0.4rem 0 0 0;
-            font-size: 0.9rem;
+            margin: 0.3rem 0 0 0;
+            font-size: 0.85rem;
         }
 
         .content-panel {
-            padding: 3rem 4rem;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 1.5rem;
-            max-width: 900px;
+            align-items: center;
+            gap: 1.25rem;
+            background: transparent;
         }
 
         .content-panel .eyebrow {
             text-transform: uppercase;
             letter-spacing: 2px;
             font-size: 0.75rem;
-            color: var(--accent-color);
+            color: #e08fa3;
             font-weight: 700;
         }
 
         .content-panel .site-title {
-            font-size: 2rem;
+            font-size: 1.9rem;
             font-weight: 600;
             margin: 0;
+            color: var(--text-color);
         }
 
         .content-panel .description {
             color: var(--text-secondary);
             line-height: 1.6;
-            max-width: 480px;
+            max-width: 460px;
+            font-size: 1.05rem;
+            margin: 0;
         }
 
         .btn-group {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .game-btn {
             background-color: var(--accent-color);
-            color: white;
+            color: #fff;
             border: none;
             padding: 0.75rem 1.5rem;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 14px;
             cursor: pointer;
             box-shadow: 0 6px 16px var(--accent-glow);
             transition: background 0.2s, transform 0.1s;
         }
 
-        .game-btn:hover { background-color: #ff6b7b; }
+        .game-btn:hover { background-color: #ef8ea3; }
         .game-btn:active { transform: scale(0.95); }
 
         .tetris-btn {
             background-color: var(--tetris-color);
             box-shadow: 0 6px 16px var(--tetris-glow);
         }
-        .tetris-btn:hover { background-color: #668dff; }
+        .tetris-btn:hover { background-color: #8fb7ef; }
 
         .exit-btn {
-            background-color: #232328;
+            background-color: #fff;
             color: var(--text-secondary);
-            border: 1px solid #34343b;
+            border: 1px solid var(--border-soft);
             box-shadow: none;
         }
-        .exit-btn:hover { background-color: #34343b; color: white; }
+        .exit-btn:hover { background-color: #f4eef8; color: var(--text-color); }
 
         /* Game area */
         #game-area {
             display: none;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             gap: 0.75rem;
+            width: 100%;
         }
 
         .game-frame {
-            padding: 1rem;
+            padding: 1.25rem;
             background: var(--panel-bg);
-            border-radius: 14px;
-            border: 1px solid #2a2a30;
+            border-radius: 20px;
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 10px 30px rgba(74, 68, 88, 0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         canvas {
-            background-color: #111;
-            border-radius: 8px;
+            background-color: #fdfbf9;
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
             display: block;
             touch-action: none;
         }
@@ -192,10 +210,10 @@
         }
 
         .d-pad-btn {
-            background-color: #232328;
+            background-color: #fdfbf9;
             color: var(--text-secondary);
-            border: 1px solid #34343b;
-            border-radius: 12px;
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
             font-size: 1.5rem;
             display: flex;
             align-items: center;
@@ -207,9 +225,9 @@
         }
 
         .d-pad-btn:active {
-            background-color: var(--text-color);
-            color: #000;
-            border-color: var(--text-color);
+            background-color: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
         }
 
         .d-pad .up { grid-column: 2; grid-row: 1; }
@@ -218,9 +236,8 @@
         .d-pad .down { grid-column: 2; grid-row: 3; }
 
         @media (max-width: 800px) {
-            .layout { grid-template-columns: 1fr; }
-            .hero-panel { height: 35vh; position: relative; top: auto; }
-            .content-panel { padding: 2rem 1.5rem; max-width: 100%; }
+            .layout { padding: 2rem 1.25rem 3rem; }
+            .hero-panel { max-width: 220px; }
             .d-pad {
                 grid-template-columns: 50px 50px 50px;
                 grid-template-rows: 50px 50px 50px;
@@ -233,14 +250,14 @@
     <div class="layout">
         <div class="hero-panel">
             <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" alt="Kaworu" id="kaworu-pic">
-            <div class="hero-overlay">
-                <h1>Kaworu</h1>
-                <p>A little corner for the games and the gallery.</p>
-            </div>
+        </div>
+        <div class="hero-overlay">
+            <h1>Kaworu</h1>
+            <p>A little corner for the games and the gallery.</p>
         </div>
 
         <div class="content-panel">
-            <div id="intro-content">
+            <div id="intro-content" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                 <span class="eyebrow">Welcome</span>
                 <p class="site-title">This is my new site.</p>
                 <p class="description">Take a break and play a quick round of Kaworu Snake or classic Tetris.</p>
@@ -307,8 +324,8 @@
         const tGridSize = 20; // 10 columns x 20 rows
         
         const tColors = {
-            'I': '#00f0ff', 'J': '#4775ff', 'L': '#ffaa00', 'O': '#ffea00',
-            'S': '#00ff77', 'Z': '#ff4757', 'T': '#cc44ff'
+            'I': '#a6e3f4', 'J': '#a6c8f4', 'L': '#f4c98a', 'O': '#f4e39a',
+            'S': '#a8e6b8', 'Z': '#f4a6b7', 'T': '#d8a6f4'
         };
         const tetrominoes = {
             'I': [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
@@ -346,7 +363,7 @@
             clearInterval(tInterval);
             activeGame = null;
             gameArea.style.display = 'none';
-            introContent.style.display = 'block';
+            introContent.style.display = 'flex';
         });
 
         restartBtn.addEventListener('click', () => {
@@ -400,11 +417,11 @@
                 return;
             }
             changingDirection = false;
-            sCtx.fillStyle = '#111';
+            sCtx.fillStyle = '#fdfbf9';
             sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
             
             // Draw Food
-            sCtx.fillStyle = '#ffca28';
+            sCtx.fillStyle = '#f4c98a';
             sCtx.beginPath();
             sCtx.arc(food.x + sGridSize/2, food.y + sGridSize/2, sGridSize/2 - 2, 0, 2 * Math.PI);
             sCtx.fill();
@@ -423,9 +440,9 @@
             snake.forEach((part, index) => {
                 if (index === 0) {
                     if (imageLoaded) sCtx.drawImage(kaworuHeadImg, part.x, part.y, sGridSize, sGridSize);
-                    else { sCtx.fillStyle = '#fff'; sCtx.fillRect(part.x, part.y, sGridSize, sGridSize); }
+                    else { sCtx.fillStyle = '#4a4458'; sCtx.fillRect(part.x, part.y, sGridSize, sGridSize); }
                 } else {
-                    sCtx.fillStyle = '#ff4757';
+                    sCtx.fillStyle = '#f4a6b7';
                     sCtx.fillRect(part.x, part.y, sGridSize - 2, sGridSize - 2);
                 }
             });
@@ -540,7 +557,7 @@
         }
 
         function drawTetris() {
-            tCtx.fillStyle = '#111';
+            tCtx.fillStyle = '#fdfbf9';
             tCtx.fillRect(0, 0, tCanvas.width, tCanvas.height);
             
             // Draw settled blocks
