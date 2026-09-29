@@ -28,9 +28,13 @@
     * { 
         box-sizing: border-box; 
         scroll-behavior: smooth; 
-        -webkit-tap-highlight-color: transparent; 
     }
     
+    /* Safe mobile tap highlight removal */
+    a, button, img, .game-card, .shop-btn, .d-btn {
+        -webkit-tap-highlight-color: transparent;
+    }
+
     body {
         margin: 0;
         background-color: var(--bg);
@@ -508,8 +512,4 @@
 
     const ripples = [];
     window.addEventListener('click', (e) => {
-        ripples.push({ x: e.clientX, y: e.clientY, r: 5, maxR: 180, opacity: 0.7 });
-    });
-
-    const particles = Array.from({ length: 56 }, () => ({
-        x: M
+        ripples.push({ x: e.clientX, y: e.clientY, r: 5, maxR:
