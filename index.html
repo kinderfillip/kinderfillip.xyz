@@ -414,7 +414,7 @@
 <footer>
     <div class="social-links">
         <a href="https://instagram.com/Kindest_fillip" target="_blank" rel="noopener" class="liquid-btn">Instagram</a>
-        <a href="https://www.tiktok.com/@kindest_fillip?_r=1&_t=ZS-9A8RW69dAFV" target="_blank" rel="noopener" class="liquid-btn">TikTok</a>
+        <a href="https://tiktok.com/@Kindest_fillip" target="_blank" rel="noopener" class="liquid-btn">TikTok</a>
     </div>
     <p class="footer-text">© 2026 Fillip. All rights reserved.</p>
 </footer>
@@ -509,8 +509,276 @@
 
     const particles = Array.from({ length: 56 }, () => ({
         x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight
+        y: Math.random() * window.innerHeight,
+        r: Math.random() * 3 + 1,
+        speedY: Math.random() * 0.6 + 0.2,
+        speedX: Math.random() * 0.8 - 0.4,
+        alpha: Math.random() * 0.6 + 0.15
     }));
+
+    let angle = 0;
+    function drawWater() {
+        let prevX = mouse.x;
+        let prevY = mouse.y;
+        mouse.x += (mouse.tx - mouse.x) * 0.08;
+        mouse.y += (mouse.ty - mouse.y) * 0.08;
+        mouse.vx = mouse.x - prevX;
+        mouse.vy = mouse.y - prevY;
+
+        wCtx.fillStyle = '#121016';
+        wCtx.fillRect(0, 0, width, height);
+
+        angle += 0.014;
+
+        const blobColors = [
+            { c1: 'rgba(95, 60, 145, 0.4)', c2: 'rgba(45, 95, 160, 0.35)' },
+            { c1: 'rgba(130, 50, 130, 0.35)', c2: 'rgba(30, 120, 160, 0.3)' },
+            { c1: 'rgba(80, 75, 180, 0.3)', c2: 'rgba(140, 60, 180, 0.25)' }
+        ];
+
+        const blobs = [
+            { x: width * 0.3 + Math.sin(angle) * 160 + (mouse.x - width/2) * 0.12, y: height * 0.3 + Math.cos(angle) * 120 + (mouse.y - height/2) * 0.12, r: width * 0.45, color: blobColors[0].c1 },
+            { x: width * 0.7 + Math.cos(angle * 0.8) * 170 - (mouse.x - width/2) * 0.1, y: height * 0.65 + Math.sin(angle * 0.8) * 140 - (mouse.y - height/2) * 0.1, r: width * 0.5, color: blobColors[1].c1 },
+            { x: mouse.x, y: mouse.y, r: width * 0.32 + Math.abs(mouse.vx) * 2, color: blobColors[2].c1 }
+        ];
+
+        blobs.forEach(b => {
+            const grad = wCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+            grad.addColorStop(0, b.color);
+            grad.addColorStop(1, 'transparent');
+            wCtx.fillStyle = grad;
+            wCtx.beginPath();
+            wCtx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            wCtx.fill();
+        });
+
+        particles.forEach(p => {
+            p.y -= p.speedY;
+            p.x += p.speedX + Math.sin(angle * 1.5 + p.y * 0.015) * 0.4;
+            
+            let dx = mouse.x - p.x;
+            let dy = mouse.y - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                p.x -= (dx / dist) * 2.5;
+                p.y -= (dy / dist) * 2.5;
+            }
+
+            if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+
+            wCtx.fillStyle = `rgba(220, 200, 255, ${p.alpha})`;
+            wCtx.beginPath();
+            wCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            wCtx.fill();
+        });
+
+        for (let i = ripples.length - 1; i >= 0; i--) {
+            let rip = ripples[i];
+            rip.r += 3.5;
+            rip.opacity *= 0.93;
+
+            wCtx.strokeStyle = `rgba(210, 180, 250, ${rip.opacity})`;
+            wCtx.lineWidth = 2;
+            wCtx.beginPath();
+            wCtx.arc(rip.x, rip.y, rip.r, 0, Math.PI * 2);
+            wCtx.stroke();
+
+            if (rip.opacity < 0.02 || rip.r > rip.maxR) {
+                ripples.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(drawWater);
+    }
+    drawWater();
+
+
+    // --- GAME STAGE & LOGIC ---
+    const gameStage = document.getElementById('game-stage');
+    const stageTitle = document.getElementById('stage-title');
+    const scoreDisplay = document.getElementById('score-display');
+    const dPad = document.getElementById('d-pad');
+    let activeGame = null;
+
+    function openGame(game) {
+        if (activeGame) teardownGame();
+        activeGame = game;
+
+        document.getElementById('gameCanvas').style.display = game === 'snake' ? 'block' : 'none';
+        document.getElementById('tetrisCanvas').style.display = game === 'tetris' ? 'block' : 'none';
+        document.getElementById('clicker-interface').style.display = game === 'clicker' ? 'flex' : 'none';
+        dPad.style.display = game === 'clicker' ? 'none' : 'grid';
+
+        if (game === 'snake') { stageTitle.innerText = 'Snake'; resetSnake(); }
+        else if (game === 'tetris') { stageTitle.innerText = 'Tetris'; resetTetris(); }
+        else if (game === 'clicker') { stageTitle.innerText = 'Fillip Clicker'; resetClicker(false); }
+
+        gameStage.style.display = 'block';
+        setTimeout(() => {
+            gameStage.classList.add('active');
+            gameStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
+    }
+
+    function closeGame() {
+        gameStage.classList.remove('active');
+        document.getElementById('arcadeTop').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        setTimeout(() => {
+            gameStage.style.display = 'none';
+            teardownGame();
+        }, 450);
+    }
+
+    function teardownGame() {
+        clearInterval(sInterval); clearInterval(tInterval); clearInterval(clickerLoop);
+        activeGame = null;
+    }
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+        if (activeGame === 'snake') resetSnake();
+        else if (activeGame === 'tetris') resetTetris();
+        else if (activeGame === 'clicker') { if(confirm("Reset clicker progress?")) resetClicker(true); }
+    });
+
+    // --- CLICKER LOGIC ---
+    let cScore = 0, cPower = 1, cCps = 0;
+    let costUpgrade = 50, costAuto = 100, costLab = 750, clickerLoop = null;
+
+    const clickerTarget = document.getElementById('clicker-target');
+    const uiPower = document.getElementById('ui-power'), uiCps = document.getElementById('ui-cps');
+    const btnUp = document.getElementById('buy-upgrade'), btnAuto = document.getElementById('buy-auto'), btnLab = document.getElementById('buy-lab');
+
+    clickerTarget.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (activeGame !== 'clicker') return;
+        
+        playClickSound();
+
+        cScore += cPower;
+
+        const rect = clickerTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const floater = document.createElement('div');
+        floater.classList.add('floating-num');
+        floater.innerText = `+${cPower}`;
+        floater.style.left = `${x}px`; floater.style.top = `${y}px`;
+        
+        clickerTarget.parentElement.appendChild(floater);
+        setTimeout(() => floater.remove(), 700);
+        updateClickerUI();
+    });
+
+    function buyItem(type) {
+        if (type === 'up' && cScore >= costUpgrade) { cScore -= costUpgrade; cPower += 1; costUpgrade = Math.floor(costUpgrade * 1.5); }
+        else if (type === 'auto' && cScore >= costAuto) { cScore -= costAuto; cCps += 2; costAuto = Math.floor(costAuto * 1.4); }
+        else if (type === 'lab' && cScore >= costLab) { cScore -= costLab; cCps += 15; costLab = Math.floor(costLab * 1.3); }
+        updateClickerUI();
+    }
+    btnUp.addEventListener('click', () => buyItem('up'));
+    btnAuto.addEventListener('click', () => buyItem('auto'));
+    btnLab.addEventListener('click', () => buyItem('lab'));
+
+    function updateClickerUI() {
+        scoreDisplay.innerText = "Score: " + Math.floor(cScore);
+        uiPower.innerText = cPower; uiCps.innerText = cCps.toFixed(1);
+        document.getElementById('cost-upgrade').innerText = costUpgrade;
+        document.getElementById('cost-auto').innerText = costAuto;
+        document.getElementById('cost-lab').innerText = costLab;
+        btnUp.disabled = cScore < costUpgrade;
+        btnAuto.disabled = cScore < costAuto;
+        btnLab.disabled = cScore < costLab;
+    }
+
+    function resetClicker(wipe) {
+        clearInterval(clickerLoop);
+        if (wipe) { cScore = 0; cPower = 1; cCps = 0; costUpgrade = 50; costAuto = 100; costLab = 750; }
+        updateClickerUI();
+        clickerLoop = setInterval(() => {
+            if (activeGame === 'clicker' && cCps > 0) {
+                cScore += (cCps / 10);
+                updateClickerUI();
+            }
+        }, 100);
+    }
+
+    // --- SNAKE LOGIC ---
+    const sCanvas = document.getElementById('gameCanvas');
+    const sCtx = sCanvas.getContext('2d');
+    const sGrid = 20, sTiles = 300 / 20;
+    let snake = [], food = {x:0, y:0}, dx = sGrid, dy = 0, sScore = 0, sInterval = null, sLocked = false;
+
+    function resetSnake() {
+        clearInterval(sInterval);
+        snake = [{x: 100, y: 100}, {x: 80, y: 100}, {x: 60, y: 100}];
+        dx = sGrid; dy = 0; sScore = 0; scoreDisplay.innerText = "Score: 0";
+        spawnFood();
+        sInterval = setInterval(updateSnake, 100);
+    }
+    function updateSnake() {
+        if (sHitWall()) { clearInterval(sInterval); scoreDisplay.innerText = "Game Over! Score: " + sScore; return; }
+        sLocked = false;
+        
+        sCtx.fillStyle = '#0a0810'; 
+        sCtx.fillRect(0, 0, 300, 300);
+        
+        sCtx.fillStyle = '#f6ad55'; sCtx.fillRect(food.x+2, food.y+2, 16, 16);
+
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) { sScore += 10; scoreDisplay.innerText = "Score: " + sScore; spawnFood(); } else { snake.pop(); }
+
+        snake.forEach((part, i) => {
+            sCtx.fillStyle = i === 0 ? '#f3f0f7' : '#48bb78';
+            sCtx.fillRect(part.x+1, part.y+1, 18, 18);
+        });
+    }
+    function spawnFood() { food.x = Math.floor(Math.random()*sTiles)*20; food.y = Math.floor(Math.random()*sTiles)*20; snake.forEach(p => { if(p.x===food.x && p.y===food.y) spawnFood();}); }
+    function sHitWall() { for(let i=4;i<snake.length;i++) if(snake[i].x===snake[0].x && snake[i].y===snake[0].y) return true; return snake[0].x<0||snake[0].x>=300||snake[0].y<0||snake[0].y>=300; }
+
+    // --- TETRIS LOGIC ---
+    const tCanvas = document.getElementById('tetrisCanvas');
+    const tCtx = tCanvas.getContext('2d');
+    const tCols = {'I':'#4299e1','J':'#3182ce','L':'#ed8936','O':'#ecc94b','S':'#48bb78','Z':'#e53e3e','T':'#9f7aea'};
+    const tets = {'I':[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],'O':[[1,1],[1,1]],'T':[[0,1,0],[1,1,1],[0,0,0]],'S':[[0,1,1],[1,1,0],[0,0,0]],'Z':[[1,1,0],[0,1,1],[0,0,0]],'J':[[1,0,0],[1,1,1],[0,0,0]],'L':[[0,0,1],[1,1,1],[0,0,0]]};
+    let tGrid=[], act=null, tScore=0, tInterval=null;
+
+    function resetTetris() {
+        clearInterval(tInterval); tGrid=Array.from({length:20},()=>Array(10).fill(0)); tScore=0; scoreDisplay.innerText="Score: 0";
+        spawnTet(); tInterval=setInterval(updateTetris, 400); drawTet();
+    }
+    function spawnTet() { const k=Object.keys(tets); const t=k[Math.floor(Math.random()*k.length)]; act={m:tets[t], n:t, r:0, c:3}; if(!valid(act.m, act.r, act.c)) clearInterval(tInterval); }
+    function valid(m, r, c) { for(let y=0;y<m.length;y++) for(let x=0;x<m[y].length;x++) if(m[y][x]) { const nr=r+y, nc=c+x; if(nr<0||nr>=20||nc<0||nc>=10||(nr>=0&&tGrid[nr][nc])) return false; } return true; }
+    function updateTetris() { if(valid(act.m, act.r+1, act.c)) act.r++; else { for(let y=0;y<act.m.length;y++) for(let x=0;x<act.m[y].length;x++) if(act.m[y][x]&&act.r+y>=0) tGrid[act.r+y][act.c+x]=act.n; clearL(); spawnTet(); } drawTet(); }
+    function clearL() { let lc=0; for(let r=19;r>=0;r--) if(tGrid[r].every(c=>c!==0)) { tGrid.splice(r,1); tGrid.unshift(Array(10).fill(0)); lc++; r++; } if(lc>0) { tScore+=lc*100; scoreDisplay.innerText="Score: "+tScore; } }
+    function drawTet() { 
+        tCtx.fillStyle = '#0a0810'; 
+        tCtx.fillRect(0,0,200,400); 
+        for(let r=0;r<20;r++) for(let c=0;c<10;c++) if(tGrid[r][c]) { tCtx.fillStyle=tCols[tGrid[r][c]]; tCtx.fillRect(c*20,r*20,19,19); } 
+        if(act) { tCtx.fillStyle=tCols[act.n]; for(let r=0;r<act.m.length;r++) for(let c=0;c<act.m[r].length;c++) if(act.m[r][c]) tCtx.fillRect((act.c+c)*20, (act.r+r)*20, 19, 19); } 
+    }
+
+    // --- CONTROLS ---
+    function handleInput(d) {
+        if(activeGame==='snake' && !sLocked) {
+            const u=dy===-20, dn=dy===20, r=dx===20, l=dx===-20;
+            if(d==='left'&&!r){dx=-20;dy=0;sLocked=true;} if(d==='up'&&!dn){dx=0;dy=-20;sLocked=true;}
+            if(d==='right'&&!l){dx=20;dy=0;sLocked=true;} if(d==='down'&&!u){dx=0;dy=20;sLocked=true;}
+        } else if(activeGame==='tetris' && act) {
+            if(d==='left' && valid(act.m, act.r, act.c-1)) act.c--;
+            if(d==='right' && valid(act.m, act.r, act.c+1)) act.c++;
+            if(d==='down' && valid(act.m, act.r+1, act.c)) act.r++;
+            if(d==='up') { const rot=act.m.map((v,i)=>act.m.map(row=>row[i]).reverse()); if(valid(rot, act.r, act.c)) act.m=rot; }
+            drawTet();
+        }
+    }
+    window.addEventListener('keydown', e => { if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.code)) e.preventDefault(); const k=e.key; if(k==='ArrowLeft'||k==='a') handleInput('left'); if(k==='ArrowUp'||k==='w') handleInput('up'); if(k==='ArrowRight'||k==='d') handleInput('right'); if(k==='ArrowDown'||k==='s') handleInput('down'); });
+    document.getElementById('btn-up').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('up'); });
+    document.getElementById('btn-left').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('left'); });
+    document.getElementById('btn-right').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('right'); });
+    document.getElementById('btn-down').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('down'); });
 </script>
 </body>
 </html>
