@@ -1,720 +1,784 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fillip's Site</title>
-    <style>
-        :root {
-            --bg-color: #faf6f2;
-            --panel-bg: #ffffff;
-            --text-color: #4a4458;
-            --accent-color: #f4a6b7;
-            --accent-glow: rgba(244, 166, 183, 0.6);
-            --tetris-color: #a6c8f4;
-            --tetris-glow: rgba(166, 200, 244, 0.6);
-            --clicker-color: #f4c98a;
-            --clicker-glow: rgba(244, 201, 138, 0.8);
-            --text-secondary: #a89bb3;
-            --border-soft: #f0e6f0;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #16161e;
-            --panel-bg: #1f1f2e;
-            --text-color: #e0def4;
-            --text-secondary: #908caa;
-            --border-soft: #2a273f;
-            --accent-glow: rgba(244, 166, 183, 0.4);
-            --tetris-glow: rgba(166, 200, 244, 0.4);
-            --clicker-glow: rgba(244, 201, 138, 0.5);
-        }
-
-        * { box-sizing: border-box; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            overflow-x: hidden;
-        }
-
-        .top-bar { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10; }
-
-        .theme-btn {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-soft);
-            color: var(--text-color);
-            font-size: 1.25rem;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: var(--transition);
-        }
-
-        .theme-btn:hover {
-            box-shadow: 0 0 20px var(--accent-glow);
-            transform: scale(1.1);
-        }
-
-        .view-section {
-            display: none;
-            width: 100%;
-            flex-direction: column;
-            align-items: center;
-            animation: slideFadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-        .view-section.active { display: flex; }
-
-        @keyframes slideFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .layout {
-            width: 100%;
-            max-width: 640px;
-            padding: 3rem 1.5rem 4rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-
-        .hero-panel {
-            position: relative;
-            width: 100%;
-            max-width: 320px;
-            aspect-ratio: 1 / 1;
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-            margin-bottom: 0;
-            transition: var(--transition);
-        }
-
-        .hero-panel:hover {
-            box-shadow: 0 0 35px var(--accent-glow);
-            transform: translateY(-5px);
-        }
-
-        .hero-panel img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: saturate(0.95) brightness(1.03);
-        }
-
-        .hero-overlay {
-            width: 100%;
-            max-width: 320px;
-            margin: 0.75rem auto 1.75rem;
-            padding: 0.9rem 1.1rem;
-            border-radius: 16px;
-            background: var(--panel-bg);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-            text-align: left;
-            border: 1px solid var(--border-soft);
-            transition: var(--transition);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fillip's Site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #121016;
+        --glass-bg: rgba(255, 255, 255, 0.04);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-hover: rgba(255, 255, 255, 0.07);
         
-        .hero-overlay:hover {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        .hero-overlay h1 { font-size: 1.25rem; margin: 0; letter-spacing: -0.5px; color: var(--text-color); }
-        .hero-overlay p { color: var(--text-secondary); margin: 0.3rem 0 0 0; font-size: 0.85rem; }
-
-        .content-panel {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-        }
-
-        .content-panel .eyebrow { text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; color: #e08fa3; font-weight: 700; }
-        .content-panel .site-title { font-size: 1.9rem; font-weight: 600; margin: 0; color: var(--text-color); }
-
-        details.updates-menu {
-            width: 100%;
-            max-width: 320px;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            text-align: left;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        details.updates-menu:hover {
-            box-shadow: 0 0 25px var(--accent-glow);
-            border-color: var(--accent-color);
-        }
-
-        details.updates-menu summary { padding: 1rem; font-weight: 600; cursor: pointer; color: var(--text-color); outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        details.updates-menu summary::-webkit-details-marker { display: none; }
-        details.updates-menu summary::after { content: '▼'; font-size: 0.8rem; color: var(--text-secondary); transition: transform 0.3s ease; }
-        details[open].updates-menu summary::after { transform: rotate(180deg); }
-
-        .updates-content {
-            padding: 0 1rem 1rem; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; border-top: 1px solid var(--border-soft); margin-top: 0.25rem; padding-top: 0.75rem;
-        }
-        .updates-content ul { margin: 0; padding-left: 1.2rem; }
-        .updates-content li { margin-bottom: 0.4rem; }
-
-        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
-
-        .game-btn, .nav-btn {
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 6px 16px var(--accent-glow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-btn:hover, .nav-btn:hover { 
-            filter: brightness(1.1);
-            box-shadow: 0 0 25px var(--accent-glow);
-            transform: translateY(-2px);
-        }
-        .game-btn:active, .nav-btn:active { transform: scale(0.95); }
-
-        .tetris-btn { background-color: var(--tetris-color); box-shadow: 0 6px 16px var(--tetris-glow); }
-        .tetris-btn:hover { box-shadow: 0 0 25px var(--tetris-glow); }
-
-        .clicker-btn { background-color: var(--clicker-color); box-shadow: 0 6px 16px var(--clicker-glow); }
-        .clicker-btn:hover { box-shadow: 0 0 30px var(--clicker-glow); }
-
-        .nav-btn {
-            background-color: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-soft); padding: 0.75rem 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .nav-btn:hover { border-color: var(--accent-color); box-shadow: 0 0 25px var(--accent-glow); color: var(--accent-color); }
-
-        .exit-btn { background-color: var(--panel-bg); color: var(--text-secondary); border: 1px solid var(--border-soft); box-shadow: none; }
-        .exit-btn:hover { background-color: var(--bg-color); color: var(--text-color); box-shadow: 0 0 15px rgba(0,0,0,0.15); }
-
-        .games-header { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1.5rem; font-style: italic; }
-
-        /* General Game Frame */
-        .game-frame {
-            padding: 1.25rem;
-            background: var(--panel-bg);
-            border-radius: 20px;
-            border: 1px solid var(--border-soft);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            transition: var(--transition);
-            position: relative;
-        }
-        .game-frame:hover { box-shadow: 0 0 35px var(--accent-glow); border-color: var(--accent-color); }
-        .game-frame.glow-clicker { animation: framePulse 3s infinite alternate; }
-
-        @keyframes framePulse {
-            0% { box-shadow: 0 0 20px var(--clicker-glow); border-color: var(--border-soft); }
-            100% { box-shadow: 0 0 45px var(--clicker-glow); border-color: var(--clicker-color); }
-        }
-
-        canvas { background-color: #fdfbf9; border: 1px solid var(--border-soft); border-radius: 12px; display: block; touch-action: none; }
-        [data-theme="dark"] canvas { background-color: #12121c; }
-        #tetrisCanvas, #clicker-container, #gameCanvas { display: none; }
-
-        /* FILLIP CLICKER STYLES */
-        #clicker-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
-        @keyframes targetPulse {
-            0% { box-shadow: 0 0 20px var(--clicker-glow), 0 0 10px var(--accent-glow); }
-            50% { box-shadow: 0 0 50px var(--clicker-glow), 0 0 25px var(--accent-color); transform: scale(1.02); }
-            100% { box-shadow: 0 0 20px var(--clicker-glow), 0 0 10px var(--accent-glow); }
-        }
-
-        #clicker-target {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-            animation: targetPulse 2.5s infinite;
-            transition: transform 0.05s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s;
-            user-select: none;
-            -webkit-user-drag: none;
-            margin: 1.5rem 0;
-            border: 4px solid var(--clicker-color);
-            position: relative;
-            z-index: 2;
-        }
-
-        #clicker-target:active {
-            transform: scale(0.85) !important;
-            filter: brightness(1.2);
-            animation: none;
-            box-shadow: 0 0 60px var(--accent-color);
-        }
-
-        .floating-text {
-            position: absolute;
-            color: var(--clicker-color);
-            font-weight: 800;
-            font-size: 1.5rem;
-            pointer-events: none;
-            z-index: 10;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            animation: floatUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
-        }
-
-        .stats-bar {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-color);
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-soft);
-        }
-
-        .stats-bar span { color: var(--text-color); }
-
-        .shop-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-            width: 100%;
-        }
-
-        .shop-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.85rem 1rem;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: left;
-        }
-
-        .shop-item:hover:not(:disabled) {
-            border-color: var(--clicker-color);
-            box-shadow: 0 0 20px var(--clicker-glow);
-            transform: scale(1.02);
-        }
-
-        .shop-item:active:not(:disabled) { transform: scale(0.98); }
-        .shop-item:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        --text-main: #f3f0f7;
+        --text-muted: #9b93a8;
         
-        .item-info h4 { margin: 0 0 0.2rem 0; color: var(--text-color); font-size: 1rem; }
-        .item-info p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
-        .item-cost { font-weight: bold; color: var(--clicker-color); background: rgba(244, 201, 138, 0.15); padding: 0.3rem 0.6rem; border-radius: 8px; }
+        --accent-clicker: #f6ad55;
+        --accent-snake: #48bb78;
+        --accent-tetris: #4299e1;
+        
+        --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+        --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-        .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-        #score { font-size: 1.4rem; font-weight: bold; color: var(--text-color); text-shadow: 0 0 15px var(--accent-glow); }
+    * { box-sizing: border-box; scroll-behavior: smooth; }
+    
+    body {
+        margin: 0;
+        background-color: var(--bg);
+        color: var(--text-main);
+        font-family: var(--font);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
 
-        .d-pad { display: grid; grid-template-columns: 55px 55px 55px; grid-template-rows: 55px 55px 55px; gap: 8px; margin-top: 1rem; justify-content: center; }
-        .d-pad-btn { background-color: var(--panel-bg); color: var(--text-secondary); border: 1px solid var(--border-soft); border-radius: 14px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; touch-action: manipulation; transition: var(--transition); }
-        .d-pad-btn:active { background-color: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(0.9); box-shadow: 0 0 20px var(--accent-glow); }
-        .d-pad .up { grid-column: 2; grid-row: 1; }
-        .d-pad .left { grid-column: 1; grid-row: 2; }
-        .d-pad .right { grid-column: 3; grid-row: 2; }
-        .d-pad .down { grid-column: 2; grid-row: 3; }
+    #waterCanvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
 
-        .social-links { margin-top: 2.5rem; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
-        .social-links a { color: var(--text-secondary); text-decoration: none; font-weight: 600; transition: color 0.2s, text-shadow 0.2s; }
-        .social-links a:hover { color: #e08fa3; text-shadow: 0 0 15px var(--accent-glow); }
-        .social-dot { color: var(--border-soft); }
-    </style>
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.2);
+        border-radius: 20px;
+        transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    nav {
+        position: fixed; top: 0; width: 100%; z-index: 100;
+        padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center;
+        background: var(--glass-bg); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .brand { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; }
+
+    .container {
+        max-width: 800px; margin: 0 auto; padding: 6rem 1.5rem 2rem;
+    }
+    section { padding: 3rem 0; display: flex; flex-direction: column; justify-content: center; }
+
+    .hero-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    @keyframes avatarPop {
+        0% { transform: scale(1); }
+        35% { transform: scale(0.82) rotate(-6deg); }
+        70% { transform: scale(1.15) rotate(6deg); }
+        100% { transform: scale(1) rotate(0deg); }
+    }
+    .avatar-card {
+        padding: 0.75rem;
+        border-radius: 50%;
+        width: 170px;
+        height: 170px;
+        margin-bottom: 1.75rem;
+        border: 1px solid var(--glass-border);
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+    }
+    .avatar-card.clicked {
+        animation: avatarPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .avatar-card:hover {
+        box-shadow: 0 0 25px rgba(246, 173, 85, 0.3);
+    }
+    .avatar-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+    }
+
+    .hero-content h1 { font-size: 2.75rem; margin: 0 0 0.5rem; font-weight: 700; letter-spacing: -1px; }
+    .hero-content p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.5; margin-bottom: 1.5rem; }
+    
+    .liquid-btn {
+        position: relative;
+        overflow: hidden;
+    }
+    .liquid-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle 140px at var(--x, 50%) var(--y, 50%), rgba(255, 255, 255, 0.35), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    .liquid-btn:hover::after {
+        opacity: 1;
+    }
+
+    .btn {
+        background: var(--text-main); color: var(--bg); border: none;
+        padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+        cursor: pointer; transition: var(--transition); text-decoration: none; display: inline-block;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    .updates-box {
+        margin-top: 1.75rem;
+        text-align: left;
+        width: 100%;
+        overflow: hidden;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+    }
+    .updates-header {
+        padding: 1.15rem 1.5rem;
+        font-weight: 600;
+        color: var(--text-main);
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+    }
+    .updates-header::after {
+        content: '+';
+        font-size: 1.2rem;
+        font-weight: 400;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .updates-box.open .updates-header::after {
+        transform: rotate(45deg);
+    }
+
+    .updates-content-wrapper {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease;
+        padding: 0 1.5rem;
+    }
+    .updates-box.open .updates-content-wrapper {
+        max-height: 220px;
+        padding: 0 1.5rem 1.25rem 1.5rem;
+    }
+    .updates-content-wrapper ul {
+        margin: 0;
+        padding-left: 1.2rem;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
+    .arcade-title { font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+    .arcade-subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+    
+    .games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .game-card {
+        padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);
+    }
+    .game-card:hover { background: var(--glass-hover); transform: translateY(-4px); border-color: var(--glass-border); }
+    .game-card h3 { margin: 0 0 0.4rem; font-size: 1.2rem; font-weight: 600; }
+    .game-card p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+
+    #game-stage {
+        display: none;
+        margin-top: 2rem;
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+        transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #game-stage.active {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+    .stage-pane { padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+    
+    .stage-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .stage-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
+    .score-badge { background: var(--glass-border); padding: 0.3rem 0.8rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+
+    canvas.game-cnv { background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid var(--glass-border); display: block; }
+    #gameCanvas, #tetrisCanvas, #clicker-interface { display: none; }
+
+    .clicker-stats { display: flex; gap: 2rem; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted); }
+    .clicker-stats span { color: var(--accent-clicker); font-weight: 700; margin-left: 0.25rem; }
+
+    #clicker-target {
+        width: 150px; height: 150px; border-radius: 50%; object-fit: cover; cursor: pointer;
+        border: 3px solid var(--accent-clicker); box-shadow: 0 0 30px rgba(246, 173, 85, 0.25);
+        transition: transform 0.08s ease; user-select: none; margin-bottom: 1.5rem;
+    }
+    #clicker-target:active { transform: scale(0.92); }
+
+    .floating-num {
+        position: absolute; pointer-events: none; font-weight: 700; font-size: 1.25rem; color: var(--accent-clicker);
+        animation: floatUp 0.7s ease-out forwards;
+    }
+    @keyframes floatUp {
+        0% { opacity: 1; transform: translateY(0) scale(1); }
+        100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+    }
+
+    .shop-list { width: 100%; display: grid; gap: 0.75rem; }
+    .shop-btn {
+        background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px;
+        padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;
+        color: var(--text-main); cursor: pointer; transition: var(--transition); text-align: left;
+    }
+    .shop-btn:hover:not(:disabled) { background: var(--glass-hover); }
+    .shop-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .shop-info h4 { margin: 0 0 0.1rem; font-size: 0.95rem; font-weight: 600; }
+    .shop-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    .shop-price { font-weight: 600; font-size: 0.85rem; color: var(--accent-clicker); background: var(--glass-border); padding: 0.2rem 0.6rem; border-radius: 6px; }
+
+    .d-pad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 6px; margin-top: 1.5rem; justify-content: center; }
+    .d-btn {
+        background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px;
+        color: var(--text-muted); font-weight: 600; cursor: pointer; transition: var(--transition);
+        display: flex; align-items: center; justify-content: center; user-select: none;
+    }
+    .d-btn:active { background: var(--text-main); color: var(--bg); transform: scale(0.95); }
+    .d-pad .up { grid-area: 1/2; } .d-pad .left { grid-area: 2/1; } .d-pad .right { grid-area: 2/3; } .d-pad .down { grid-area: 3/2; }
+
+    .stage-actions { margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; }
+    .btn-sub { background: transparent; border: none; color: var(--text-muted); font: inherit; font-size: 0.85rem; cursor: pointer; transition: var(--transition); }
+    .btn-sub:hover { color: var(--text-main); }
+
+    footer {
+        max-width: 800px;
+        margin: 3rem auto 2rem;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        border-top: 1px solid var(--glass-border);
+    }
+    .social-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+    .social-links a {
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+    }
+    .social-links a:hover {
+        background: var(--glass-hover);
+        transform: translateY(-2px);
+    }
+    .footer-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .games-grid { grid-template-columns: 1fr; }
+    }
+</style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <button id="theme-btn" class="theme-btn">🌙</button>
-    </div>
+<canvas id="waterCanvas"></canvas>
 
-    <div class="layout">
-        <div id="view-home" class="view-section active">
-            <div class="hero-panel">
+<nav>
+    <div class="brand">Fillip</div>
+</nav>
+
+<div class="container">
+    <section id="home">
+        <div class="hero-container">
+            <div class="glass avatar-card" id="secretAvatar" title="Click me 5 times!">
                 <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" alt="Fillip">
             </div>
-            <div class="hero-overlay">
-                <h1>About</h1>
-                <p>site made by @Kindest_fillip on Instagram/TikTok</p>
-            </div>
-
-            <div class="content-panel">
-                <span class="eyebrow">Welcome</span>
-                <p class="site-title">Fillip's Site</p>
+            
+            <div class="hero-content">
+                <h1>Fillip's Site</h1>
+                <p>Made by @Kindest_fillip on Instagram and TikTok. Explore the arcade below for titles and clicker upgrades.</p>
+                <a href="#arcade" class="btn liquid-btn">Open Arcade</a>
                 
-                <details class="updates-menu">
-                    <summary>View Latest Updates ✨</summary>
-                    <div class="updates-content">
+                <div class="glass updates-box liquid-btn" id="updatesBox">
+                    <div class="updates-header" onclick="toggleUpdates()">What's New</div>
+                    <div class="updates-content-wrapper">
                         <ul>
-                            <li>🧪 <b>NEW:</b> Cloning Labs & Upgrades in Clicker!</li>
-                            <li>🌟 Enhanced glowing animations & visual feedback</li>
-                            <li>🔒 Acquired an SSL certificate</li>
-                            <li>🌙 Added a seamless dark theme toggle</li>
-                            <li>🎮 Migrated games to a dedicated hub</li>
+                            <li>Huge redesign and updates to the games.</li>
+                            <li>Fresh animations, background physics etc.</li>
+                            <li>New Easter egg👀</li>
                         </ul>
                     </div>
-                </details>
-
-                <div class="btn-group" style="margin-top: 1.5rem;">
-                    <button class="nav-btn" id="nav-to-games">Enter Game Hub 🕹️</button>
                 </div>
             </div>
         </div>
+    </section>
 
-        <div id="view-games-hub" class="view-section">
-            <div class="content-panel">
-                <span class="eyebrow">Arcade</span>
-                <p class="site-title">Game Hub</p>
-                <p class="games-header">More games coming in the future ✨</p>
-                
-                <div class="btn-group" style="flex-direction: column; width: 100%; max-width: 250px;">
-                    <button class="game-btn clicker-btn" id="start-clicker-btn">Fillip Clicker 🌟</button>
-                    <button class="game-btn" id="start-snake-btn">Play Snake</button>
-                    <button class="game-btn tetris-btn" id="start-tetris-btn">Play Tetris</button>
-                </div>
-                
-                <button class="game-btn exit-btn" id="back-to-home" style="margin-top: 1.5rem;">← Back to Home</button>
-            </div>
-        </div>
-
-        <div id="view-game-play" class="view-section">
-            <div class="btn-group" style="margin-bottom: 1rem;">
-                <button class="game-btn" id="restart-btn">Restart Game</button>
-                <button class="game-btn exit-btn" id="exit-btn">Exit to Hub</button>
-            </div>
+    <section id="arcade">
+        <div id="arcadeTop">
+            <h2 class="arcade-title">Arcade</h2>
+            <p class="arcade-subtitle">Choose a game to play right here.</p>
             
-            <div class="game-frame" id="main-game-frame">
-                <div class="game-header">
-                    <div id="score">Score: 0</div>
+            <div class="games-grid">
+                <div class="glass game-card liquid-btn" onclick="openGame('clicker')">
+                    <h3>Clicker</h3>
+                    <p>Earn points & cloning labs</p>
                 </div>
-                
-                <canvas id="gameCanvas" width="300" height="300"></canvas>
-                <canvas id="tetrisCanvas" width="200" height="400"></canvas>
-                
-                <!-- CLICKER UI -->
-                <div id="clicker-container">
-                    <div class="stats-bar">
-                        <div>Power: <span id="stat-power">1</span></div>
-                        <div>CPS: <span id="stat-cps">0.0</span></div>
+                <div class="glass game-card liquid-btn" onclick="openGame('snake')">
+                    <h3>Snake</h3>
+                    <p>Classic grid routing</p>
+                </div>
+                <div class="glass game-card liquid-btn" onclick="openGame('tetris')">
+                    <h3>Tetris</h3>
+                    <p>Stack and clear blocks</p>
+                </div>
+            </div>
+
+            <div id="game-stage">
+                <div class="glass stage-pane">
+                    <div class="stage-header">
+                        <h3 class="stage-title" id="stage-title">Game</h3>
+                        <div class="score-badge" id="score-display">Score: 0</div>
                     </div>
 
-                    <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" id="clicker-target" alt="Click Me!" draggable="false">
+                    <canvas id="gameCanvas" class="game-cnv" width="300" height="300"></canvas>
+                    <canvas id="tetrisCanvas" class="game-cnv" width="200" height="400"></canvas>
                     
-                    <div class="shop-grid">
-                        <button class="shop-item" id="buy-upgrade">
-                            <div class="item-info">
-                                <h4>🖱️ Cursor Upgrade</h4>
-                                <p>+1 Click Power</p>
-                            </div>
-                            <div class="item-cost" id="cost-upgrade">50</div>
-                        </button>
-                        
-                        <button class="shop-item" id="buy-auto">
-                            <div class="item-info">
-                                <h4>⚙️ Auto-Clicker</h4>
-                                <p>+2 Clicks Per Second</p>
-                            </div>
-                            <div class="item-cost" id="cost-auto">100</div>
-                        </button>
+                    <div id="clicker-interface" style="width: 100%; max-width: 400px; display: none; flex-direction: column; align-items: center;">
+                        <div class="clicker-stats">
+                            <div>Power: <span id="ui-power">1</span></div>
+                            <div>Per Second: <span id="ui-cps">0.0</span></div>
+                        </div>
 
-                        <button class="shop-item" id="buy-lab">
-                            <div class="item-info">
-                                <h4>🧪 Cloning Lab</h4>
-                                <p>+15 Clicks Per Second</p>
-                            </div>
-                            <div class="item-cost" id="cost-lab">750</div>
-                        </button>
+                        <div style="position: relative;">
+                            <img src="https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg" id="clicker-target" draggable="false">
+                        </div>
+
+                        <div class="shop-list">
+                            <button class="shop-btn liquid-btn" id="buy-upgrade">
+                                <div class="shop-info">
+                                    <h4>Cursor Upgrade</h4>
+                                    <p>+1 click power</p>
+                                </div>
+                                <div class="shop-price" id="cost-upgrade">50</div>
+                            </button>
+                            <button class="shop-btn liquid-btn" id="buy-auto">
+                                <div class="shop-info">
+                                    <h4>Auto-Clicker</h4>
+                                    <p>+2 points per sec</p>
+                                </div>
+                                <div class="shop-price" id="cost-auto">100</div>
+                            </button>
+                            <button class="shop-btn liquid-btn" id="buy-lab">
+                                <div class="shop-info">
+                                    <h4>Cloning Lab</h4>
+                                    <p>+15 points per sec</p>
+                                </div>
+                                <div class="shop-price" id="cost-lab">750</div>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="d-pad" id="d-pad-container">
-                    <button class="d-pad-btn up" id="btn-up">▲</button>
-                    <button class="d-pad-btn left" id="btn-left">◄</button>
-                    <button class="d-pad-btn right" id="btn-right">►</button>
-                    <button class="d-pad-btn down" id="btn-down">▼</button>
+
+                    <div class="d-pad" id="d-pad">
+                        <button class="d-btn up liquid-btn" id="btn-up">▲</button>
+                        <button class="d-btn left liquid-btn" id="btn-left">◄</button>
+                        <button class="d-btn right liquid-btn" id="btn-right">►</button>
+                        <button class="d-btn down liquid-btn" id="btn-down">▼</button>
+                    </div>
+
+                    <div class="stage-actions">
+                        <button class="btn-sub liquid-btn" id="btn-restart" style="padding: 0.4rem 0.8rem; border-radius: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border);">Restart</button>
+                        <button class="btn-sub liquid-btn" onclick="closeGame()" style="padding: 0.4rem 0.8rem; border-radius: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border);">Close Game</button>
+                    </div>
                 </div>
             </div>
         </div>
+    </section>
+</div>
 
-        <div class="social-links">
-            <a href="https://www.instagram.com/kindest_fillip?igsh=MWk4eXYzYmltZWo3" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <span class="social-dot">·</span>
-            <a href="https://tiktok.com/@kindest_fillip" target="_blank" rel="noopener noreferrer">TikTok</a>
-        </div>
+<footer>
+    <div class="social-links">
+        <a href="https://instagram.com/Kindest_fillip" target="_blank" rel="noopener" class="liquid-btn">Instagram</a>
+        <a href="https://tiktok.com/@Kindest_fillip" target="_blank" rel="noopener" class="liquid-btn">TikTok</a>
     </div>
+    <p class="footer-text">© 2026 Fillip. All rights reserved.</p>
+</footer>
 
-    <script>
-        // --- THEME TOGGLE ---
-        const themeBtn = document.getElementById('theme-btn');
-        let isDark = false;
-        themeBtn.addEventListener('click', () => {
-            isDark = !isDark;
-            if (isDark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                themeBtn.innerText = '☀️';
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                themeBtn.innerText = '🌙';
-            }
-        });
-
-        // --- VIEW NAVIGATION ---
-        const viewHome = document.getElementById('view-home');
-        const viewGamesHub = document.getElementById('view-games-hub');
-        const viewGamePlay = document.getElementById('view-game-play');
-        const mainGameFrame = document.getElementById('main-game-frame');
-        
-        function switchView(targetView) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            void targetView.offsetWidth; 
-            targetView.classList.add('active');
+<script>
+    // --- AUDIO SYNTHESIZER FOR CLICK SOUND ---
+    let audioCtx = null;
+    function playClickSound() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
         }
 
-        document.getElementById('nav-to-games').addEventListener('click', () => switchView(viewGamesHub));
-        document.getElementById('back-to-home').addEventListener('click', () => switchView(viewHome));
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
-        // --- GLOBAL CONTROLS ---
-        const scoreDisplay = document.getElementById('score');
-        const dPadContainer = document.getElementById('d-pad-container');
-        let activeGame = null;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(550, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.06);
 
-        // --- FILLIP CLICKER VARIABLES ---
-        let cScore = 0;
-        let cPower = 1;
-        let cCps = 0;
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.06);
+    }
+
+    // --- LIQUID GLASS MOUSE TRACKING ---
+    document.querySelectorAll('.liquid-btn').forEach(el => {
+        el.addEventListener('mousemove', e => {
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            el.style.setProperty('--x', `${x}px`);
+            el.style.setProperty('--y', `${y}px`);
+        });
+    });
+
+    // --- SECRET AVATAR CLICKER TRIGGER & ANIMATION (5 CLICKS) ---
+    let avatarClicks = 0;
+    let avatarTimer = null;
+    const secretAvatar = document.getElementById('secretAvatar');
+
+    secretAvatar.addEventListener('click', () => {
+        secretAvatar.classList.remove('clicked');
+        void secretAvatar.offsetWidth;
+        secretAvatar.classList.add('clicked');
+
+        avatarClicks++;
+        clearTimeout(avatarTimer);
+        avatarTimer = setTimeout(() => { avatarClicks = 0; }, 1200);
+
+        if (avatarClicks >= 5) {
+            avatarClicks = 0;
+            openGame('clicker');
+        }
+    });
+
+    // --- ACCORDION TOGGLE ---
+    function toggleUpdates() {
+        const box = document.getElementById('updatesBox');
+        box.classList.toggle('open');
+    }
+
+    // --- WATERY BACKGROUND ---
+    const waterCanvas = document.getElementById('waterCanvas');
+    const wCtx = waterCanvas.getContext('2d');
+    let width, height;
+    
+    function resizeWater() {
+        width = waterCanvas.width = window.innerWidth;
+        height = waterCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeWater);
+    resizeWater();
+
+    const mouse = { x: width / 2, y: height / 2, tx: width / 2, ty: height / 2, vx: 0, vy: 0 };
+    window.addEventListener('mousemove', (e) => {
+        mouse.tx = e.clientX;
+        mouse.ty = e.clientY;
+    });
+
+    const ripples = [];
+    window.addEventListener('click', (e) => {
+        ripples.push({ x: e.clientX, y: e.clientY, r: 5, maxR: 180, opacity: 0.7 });
+    });
+
+    const particles = Array.from({ length: 56 }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        r: Math.random() * 3 + 1,
+        speedY: Math.random() * 0.6 + 0.2,
+        speedX: Math.random() * 0.8 - 0.4,
+        alpha: Math.random() * 0.6 + 0.15
+    }));
+
+    let angle = 0;
+    function drawWater() {
+        let prevX = mouse.x;
+        let prevY = mouse.y;
+        mouse.x += (mouse.tx - mouse.x) * 0.08;
+        mouse.y += (mouse.ty - mouse.y) * 0.08;
+        mouse.vx = mouse.x - prevX;
+        mouse.vy = mouse.y - prevY;
+
+        wCtx.fillStyle = '#121016';
+        wCtx.fillRect(0, 0, width, height);
+
+        angle += 0.014;
+
+        const blobColors = [
+            { c1: 'rgba(95, 60, 145, 0.4)', c2: 'rgba(45, 95, 160, 0.35)' },
+            { c1: 'rgba(130, 50, 130, 0.35)', c2: 'rgba(30, 120, 160, 0.3)' },
+            { c1: 'rgba(80, 75, 180, 0.3)', c2: 'rgba(140, 60, 180, 0.25)' }
+        ];
+
+        const blobs = [
+            { x: width * 0.3 + Math.sin(angle) * 160 + (mouse.x - width/2) * 0.12, y: height * 0.3 + Math.cos(angle) * 120 + (mouse.y - height/2) * 0.12, r: width * 0.45, color: blobColors[0].c1 },
+            { x: width * 0.7 + Math.cos(angle * 0.8) * 170 - (mouse.x - width/2) * 0.1, y: height * 0.65 + Math.sin(angle * 0.8) * 140 - (mouse.y - height/2) * 0.1, r: width * 0.5, color: blobColors[1].c1 },
+            { x: mouse.x, y: mouse.y, r: width * 0.32 + Math.abs(mouse.vx) * 2, color: blobColors[2].c1 }
+        ];
+
+        blobs.forEach(b => {
+            const grad = wCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+            grad.addColorStop(0, b.color);
+            grad.addColorStop(1, 'transparent');
+            wCtx.fillStyle = grad;
+            wCtx.beginPath();
+            wCtx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            wCtx.fill();
+        });
+
+        particles.forEach(p => {
+            p.y -= p.speedY;
+            p.x += p.speedX + Math.sin(angle * 1.5 + p.y * 0.015) * 0.4;
+            
+            let dx = mouse.x - p.x;
+            let dy = mouse.y - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                p.x -= (dx / dist) * 2.5;
+                p.y -= (dy / dist) * 2.5;
+            }
+
+            if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+
+            wCtx.fillStyle = `rgba(220, 200, 255, ${p.alpha})`;
+            wCtx.beginPath();
+            wCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            wCtx.fill();
+        });
+
+        for (let i = ripples.length - 1; i >= 0; i--) {
+            let rip = ripples[i];
+            rip.r += 3.5;
+            rip.opacity *= 0.93;
+
+            wCtx.strokeStyle = `rgba(210, 180, 250, ${rip.opacity})`;
+            wCtx.lineWidth = 2;
+            wCtx.beginPath();
+            wCtx.arc(rip.x, rip.y, rip.r, 0, Math.PI * 2);
+            wCtx.stroke();
+
+            if (rip.opacity < 0.02 || rip.r > rip.maxR) {
+                ripples.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(drawWater);
+    }
+    drawWater();
+
+
+    // --- GAME STAGE & LOGIC ---
+    const gameStage = document.getElementById('game-stage');
+    const stageTitle = document.getElementById('stage-title');
+    const scoreDisplay = document.getElementById('score-display');
+    const dPad = document.getElementById('d-pad');
+    let activeGame = null;
+
+    function openGame(game) {
+        if (activeGame) teardownGame();
+        activeGame = game;
+
+        document.getElementById('gameCanvas').style.display = game === 'snake' ? 'block' : 'none';
+        document.getElementById('tetrisCanvas').style.display = game === 'tetris' ? 'block' : 'none';
+        document.getElementById('clicker-interface').style.display = game === 'clicker' ? 'flex' : 'none';
+        dPad.style.display = game === 'clicker' ? 'none' : 'grid';
+
+        if (game === 'snake') { stageTitle.innerText = 'Snake'; resetSnake(); }
+        else if (game === 'tetris') { stageTitle.innerText = 'Tetris'; resetTetris(); }
+        else if (game === 'clicker') { stageTitle.innerText = 'Fillip Clicker'; resetClicker(false); }
+
+        gameStage.style.display = 'block';
+        setTimeout(() => {
+            gameStage.classList.add('active');
+            gameStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
+    }
+
+    function closeGame() {
+        gameStage.classList.remove('active');
+        document.getElementById('arcadeTop').scrollIntoView({ behavior: 'smooth', block: 'start' });
         
-        let costUpgrade = 50;
-        let costAuto = 100;
-        let costLab = 750;
-        let clickerLoop = null;
+        setTimeout(() => {
+            gameStage.style.display = 'none';
+            teardownGame();
+        }, 450);
+    }
 
-        const clickerContainer = document.getElementById('clicker-container');
-        const clickerTarget = document.getElementById('clicker-target');
+    function teardownGame() {
+        clearInterval(sInterval); clearInterval(tInterval); clearInterval(clickerLoop);
+        activeGame = null;
+    }
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+        if (activeGame === 'snake') resetSnake();
+        else if (activeGame === 'tetris') resetTetris();
+        else if (activeGame === 'clicker') { if(confirm("Reset clicker progress?")) resetClicker(true); }
+    });
+
+    // --- CLICKER LOGIC ---
+    let cScore = 0, cPower = 1, cCps = 0;
+    let costUpgrade = 50, costAuto = 100, costLab = 750, clickerLoop = null;
+
+    const clickerTarget = document.getElementById('clicker-target');
+    const uiPower = document.getElementById('ui-power'), uiCps = document.getElementById('ui-cps');
+    const btnUp = document.getElementById('buy-upgrade'), btnAuto = document.getElementById('buy-auto'), btnLab = document.getElementById('buy-lab');
+
+    clickerTarget.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (activeGame !== 'clicker') return;
         
-        const statPower = document.getElementById('stat-power');
-        const statCps = document.getElementById('stat-cps');
+        playClickSound();
+
+        cScore += cPower;
+
+        const rect = clickerTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const floater = document.createElement('div');
+        floater.classList.add('floating-num');
+        floater.innerText = `+${cPower}`;
+        floater.style.left = `${x}px`; floater.style.top = `${y}px`;
         
-        const btnBuyUpgrade = document.getElementById('buy-upgrade');
-        const btnBuyAuto = document.getElementById('buy-auto');
-        const btnBuyLab = document.getElementById('buy-lab');
+        clickerTarget.parentElement.appendChild(floater);
+        setTimeout(() => floater.remove(), 700);
+        updateClickerUI();
+    });
 
-        // Click Event + Floating Text Animation
-        clickerTarget.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            if (activeGame === 'clicker') {
-                cScore += cPower;
-                
-                // Floating text creation
-                const rect = clickerTarget.getBoundingClientRect();
-                const containerRect = clickerContainer.getBoundingClientRect();
-                const x = e.clientX - containerRect.left + (Math.random() * 20 - 10);
-                const y = e.clientY - containerRect.top + (Math.random() * 20 - 10);
+    function buyItem(type) {
+        if (type === 'up' && cScore >= costUpgrade) { cScore -= costUpgrade; cPower += 1; costUpgrade = Math.floor(costUpgrade * 1.5); }
+        else if (type === 'auto' && cScore >= costAuto) { cScore -= costAuto; cCps += 2; costAuto = Math.floor(costAuto * 1.4); }
+        else if (type === 'lab' && cScore >= costLab) { cScore -= costLab; cCps += 15; costLab = Math.floor(costLab * 1.3); }
+        updateClickerUI();
+    }
+    btnUp.addEventListener('click', () => buyItem('up'));
+    btnAuto.addEventListener('click', () => buyItem('auto'));
+    btnLab.addEventListener('click', () => buyItem('lab'));
 
-                const floater = document.createElement('div');
-                floater.classList.add('floating-text');
-                floater.innerText = `+${cPower}`;
-                floater.style.left = `${x}px`;
-                floater.style.top = `${y}px`;
-                
-                clickerContainer.appendChild(floater);
-                setTimeout(() => floater.remove(), 800);
-                
+    function updateClickerUI() {
+        scoreDisplay.innerText = "Score: " + Math.floor(cScore);
+        uiPower.innerText = cPower; uiCps.innerText = cCps.toFixed(1);
+        document.getElementById('cost-upgrade').innerText = costUpgrade;
+        document.getElementById('cost-auto').innerText = costAuto;
+        document.getElementById('cost-lab').innerText = costLab;
+        btnUp.disabled = cScore < costUpgrade;
+        btnAuto.disabled = cScore < costAuto;
+        btnLab.disabled = cScore < costLab;
+    }
+
+    function resetClicker(wipe) {
+        clearInterval(clickerLoop);
+        if (wipe) { cScore = 0; cPower = 1; cCps = 0; costUpgrade = 50; costAuto = 100; costLab = 750; }
+        updateClickerUI();
+        clickerLoop = setInterval(() => {
+            if (activeGame === 'clicker' && cCps > 0) {
+                cScore += (cCps / 10);
                 updateClickerUI();
             }
-        });
+        }, 100);
+    }
 
-        // Clicker Shop Logic
-        function buyItem(type) {
-            if (type === 'upgrade' && cScore >= costUpgrade) {
-                cScore -= costUpgrade;
-                cPower += 1;
-                costUpgrade = Math.floor(costUpgrade * 1.5);
-            } else if (type === 'auto' && cScore >= costAuto) {
-                cScore -= costAuto;
-                cCps += 2;
-                costAuto = Math.floor(costAuto * 1.4);
-            } else if (type === 'lab' && cScore >= costLab) {
-                cScore -= costLab;
-                cCps += 15;
-                costLab = Math.floor(costLab * 1.3);
-            }
-            updateClickerUI();
-        }
+    // --- SNAKE LOGIC ---
+    const sCanvas = document.getElementById('gameCanvas');
+    const sCtx = sCanvas.getContext('2d');
+    const sGrid = 20, sTiles = 300 / 20;
+    let snake = [], food = {x:0, y:0}, dx = sGrid, dy = 0, sScore = 0, sInterval = null, sLocked = false;
 
-        btnBuyUpgrade.addEventListener('click', () => buyItem('upgrade'));
-        btnBuyAuto.addEventListener('click', () => buyItem('auto'));
-        btnBuyLab.addEventListener('click', () => buyItem('lab'));
-
-        function updateClickerUI() {
-            scoreDisplay.innerText = "Score: " + Math.floor(cScore);
-            statPower.innerText = cPower;
-            statCps.innerText = cCps.toFixed(1);
-
-            document.getElementById('cost-upgrade').innerText = costUpgrade;
-            document.getElementById('cost-auto').innerText = costAuto;
-            document.getElementById('cost-lab').innerText = costLab;
-
-            btnBuyUpgrade.disabled = cScore < costUpgrade;
-            btnBuyAuto.disabled = cScore < costAuto;
-            btnBuyLab.disabled = cScore < costLab;
-        }
-
-        function resetClicker() {
-            clearInterval(clickerLoop);
-            cScore = 0; cPower = 1; cCps = 0;
-            costUpgrade = 50; costAuto = 100; costLab = 750;
-            updateClickerUI();
-            clickerLoop = setInterval(() => {
-                if (activeGame === 'clicker' && cCps > 0) {
-                    cScore += (cCps / 10); // Run at 10 ticks per second for smoothness
-                    updateClickerUI();
-                }
-            }, 100);
-        }
-
-        // --- GAME ROUTING ---
-        function setGameVisibility(game) {
-            document.getElementById('gameCanvas').style.display = game === 'snake' ? 'block' : 'none';
-            document.getElementById('tetrisCanvas').style.display = game === 'tetris' ? 'block' : 'none';
-            clickerContainer.style.display = game === 'clicker' ? 'flex' : 'none';
-            
-            dPadContainer.style.display = game === 'clicker' ? 'none' : 'grid';
-            
-            if (game === 'clicker') {
-                mainGameFrame.classList.add('glow-clicker');
-            } else {
-                mainGameFrame.classList.remove('glow-clicker');
-            }
-        }
-
-        document.getElementById('start-snake-btn').addEventListener('click', () => { activeGame = 'snake'; setGameVisibility('snake'); switchView(viewGamePlay); resetSnake(); });
-        document.getElementById('start-tetris-btn').addEventListener('click', () => { activeGame = 'tetris'; setGameVisibility('tetris'); switchView(viewGamePlay); resetTetris(); });
-        document.getElementById('start-clicker-btn').addEventListener('click', () => { activeGame = 'clicker'; setGameVisibility('clicker'); switchView(viewGamePlay); resetClicker(); });
-
-        document.getElementById('exit-btn').addEventListener('click', () => {
-            clearInterval(sInterval); clearInterval(tInterval); clearInterval(clickerLoop);
-            activeGame = null; switchView(viewGamesHub);
-        });
-
-        document.getElementById('restart-btn').addEventListener('click', () => {
-            if (activeGame === 'snake') resetSnake(); else if (activeGame === 'tetris') resetTetris(); else if (activeGame === 'clicker') {
-                // Confirm before resetting long idle progress
-                if(confirm("Are you sure you want to reset your Clicker progress?")) resetClicker();
-            }
-        });
-
-        // --- SNAKE LOGIC ---
-        const sCanvas = document.getElementById('gameCanvas');
-        const sCtx = sCanvas.getContext('2d');
-        const sGridSize = 20, sTileCount = 300 / 20;
-        let snake = [], food = {x:0, y:0}, dx = sGridSize, dy = 0, sScore = 0, sInterval = null, changingDirection = false;
+    function resetSnake() {
+        clearInterval(sInterval);
+        snake = [{x: 100, y: 100}, {x: 80, y: 100}, {x: 60, y: 100}];
+        dx = sGrid; dy = 0; sScore = 0; scoreDisplay.innerText = "Score: 0";
+        spawnFood();
+        sInterval = setInterval(updateSnake, 100);
+    }
+    function updateSnake() {
+        if (sHitWall()) { clearInterval(sInterval); scoreDisplay.innerText = "Game Over! Score: " + sScore; return; }
+        sLocked = false;
         
-        const kaworuImg = new Image();
-        let imgLoaded = false;
-        kaworuImg.onload = () => { imgLoaded = true; };
-        kaworuImg.src = 'https://i.pinimg.com/736x/81/20/77/81207742f09eeecfe8babec30deb6512.jpg';
+        sCtx.fillStyle = '#0a0810'; 
+        sCtx.fillRect(0, 0, 300, 300);
+        
+        sCtx.fillStyle = '#f6ad55'; sCtx.fillRect(food.x+2, food.y+2, 16, 16);
 
-        function resetSnake() {
-            clearInterval(sInterval);
-            snake = [{x: 100, y: 100}, {x: 80, y: 100}, {x: 60, y: 100}];
-            dx = sGridSize; dy = 0; sScore = 0; scoreDisplay.innerText = "Score: 0";
-            spawnFood();
-            sInterval = setInterval(updateSnake, 100);
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) { sScore += 10; scoreDisplay.innerText = "Score: " + sScore; spawnFood(); } else { snake.pop(); }
+
+        snake.forEach((part, i) => {
+            sCtx.fillStyle = i === 0 ? '#f3f0f7' : '#48bb78';
+            sCtx.fillRect(part.x+1, part.y+1, 18, 18);
+        });
+    }
+    function spawnFood() { food.x = Math.floor(Math.random()*sTiles)*20; food.y = Math.floor(Math.random()*sTiles)*20; snake.forEach(p => { if(p.x===food.x && p.y===food.y) spawnFood();}); }
+    function sHitWall() { for(let i=4;i<snake.length;i++) if(snake[i].x===snake[0].x && snake[i].y===snake[0].y) return true; return snake[0].x<0||snake[0].x>=300||snake[0].y<0||snake[0].y>=300; }
+
+    // --- TETRIS LOGIC ---
+    const tCanvas = document.getElementById('tetrisCanvas');
+    const tCtx = tCanvas.getContext('2d');
+    const tCols = {'I':'#4299e1','J':'#3182ce','L':'#ed8936','O':'#ecc94b','S':'#48bb78','Z':'#e53e3e','T':'#9f7aea'};
+    const tets = {'I':[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],'O':[[1,1],[1,1]],'T':[[0,1,0],[1,1,1],[0,0,0]],'S':[[0,1,1],[1,1,0],[0,0,0]],'Z':[[1,1,0],[0,1,1],[0,0,0]],'J':[[1,0,0],[1,1,1],[0,0,0]],'L':[[0,0,1],[1,1,1],[0,0,0]]};
+    let tGrid=[], act=null, tScore=0, tInterval=null;
+
+    function resetTetris() {
+        clearInterval(tInterval); tGrid=Array.from({length:20},()=>Array(10).fill(0)); tScore=0; scoreDisplay.innerText="Score: 0";
+        spawnTet(); tInterval=setInterval(updateTetris, 400); drawTet();
+    }
+    function spawnTet() { const k=Object.keys(tets); const t=k[Math.floor(Math.random()*k.length)]; act={m:tets[t], n:t, r:0, c:3}; if(!valid(act.m, act.r, act.c)) clearInterval(tInterval); }
+    function valid(m, r, c) { for(let y=0;y<m.length;y++) for(let x=0;x<m[y].length;x++) if(m[y][x]) { const nr=r+y, nc=c+x; if(nr<0||nr>=20||nc<0||nc>=10||(nr>=0&&tGrid[nr][nc])) return false; } return true; }
+    function updateTetris() { if(valid(act.m, act.r+1, act.c)) act.r++; else { for(let y=0;y<act.m.length;y++) for(let x=0;x<act.m[y].length;x++) if(act.m[y][x]&&act.r+y>=0) tGrid[act.r+y][act.c+x]=act.n; clearL(); spawnTet(); } drawTet(); }
+    function clearL() { let lc=0; for(let r=19;r>=0;r--) if(tGrid[r].every(c=>c!==0)) { tGrid.splice(r,1); tGrid.unshift(Array(10).fill(0)); lc++; r++; } if(lc>0) { tScore+=lc*100; scoreDisplay.innerText="Score: "+tScore; } }
+    function drawTet() { 
+        tCtx.fillStyle = '#0a0810'; 
+        tCtx.fillRect(0,0,200,400); 
+        for(let r=0;r<20;r++) for(let c=0;c<10;c++) if(tGrid[r][c]) { tCtx.fillStyle=tCols[tGrid[r][c]]; tCtx.fillRect(c*20,r*20,19,19); } 
+        if(act) { tCtx.fillStyle=tCols[act.n]; for(let r=0;r<act.m.length;r++) for(let c=0;c<act.m[r].length;c++) if(act.m[r][c]) tCtx.fillRect((act.c+c)*20, (act.r+r)*20, 19, 19); } 
+    }
+
+    // --- CONTROLS ---
+    function handleInput(d) {
+        if(activeGame==='snake' && !sLocked) {
+            const u=dy===-20, dn=dy===20, r=dx===20, l=dx===-20;
+            if(d==='left'&&!r){dx=-20;dy=0;sLocked=true;} if(d==='up'&&!dn){dx=0;dy=-20;sLocked=true;}
+            if(d==='right'&&!l){dx=20;dy=0;sLocked=true;} if(d==='down'&&!u){dx=0;dy=20;sLocked=true;}
+        } else if(activeGame==='tetris' && act) {
+            if(d==='left' && valid(act.m, act.r, act.c-1)) act.c--;
+            if(d==='right' && valid(act.m, act.r, act.c+1)) act.c++;
+            if(d==='down' && valid(act.m, act.r+1, act.c)) act.r++;
+            if(d==='up') { const rot=act.m.map((v,i)=>act.m.map(row=>row[i]).reverse()); if(valid(rot, act.r, act.c)) act.m=rot; }
+            drawTet();
         }
-
-        function updateSnake() {
-            if (sHitWall()) { clearInterval(sInterval); scoreDisplay.innerText = "Game Over! Score: " + sScore; return; }
-            changingDirection = false;
-            sCtx.fillStyle = isDark ? '#12121c' : '#fdfbf9'; sCtx.fillRect(0, 0, 300, 300);
-            sCtx.fillStyle = '#f4c98a'; sCtx.beginPath(); sCtx.arc(food.x+10, food.y+10, 8, 0, Math.PI*2); sCtx.fill();
-
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) { sScore += 10; scoreDisplay.innerText = "Score: " + sScore; spawnFood(); } else { snake.pop(); }
-
-            snake.forEach((part, i) => {
-                if (i === 0 && imgLoaded) { sCtx.drawImage(kaworuImg, part.x, part.y, 20, 20); }
-                else { sCtx.fillStyle = i===0 ? '#4a4458' : '#f4a6b7'; sCtx.fillRect(part.x, part.y, 18, 18); }
-            });
-        }
-        function spawnFood() { food.x = Math.floor(Math.random()*sTileCount)*20; food.y = Math.floor(Math.random()*sTileCount)*20; snake.forEach(p => { if(p.x===food.x && p.y===food.y) spawnFood();}); }
-        function sHitWall() { for(let i=4;i<snake.length;i++) if(snake[i].x===snake[0].x && snake[i].y===snake[0].y) return true; return snake[0].x<0||snake[0].x>=300||snake[0].y<0||snake[0].y>=300; }
-
-        // --- TETRIS LOGIC ---
-        const tCanvas = document.getElementById('tetrisCanvas');
-        const tCtx = tCanvas.getContext('2d');
-        const tColors = {'I':'#a6e3f4','J':'#a6c8f4','L':'#f4c98a','O':'#f4e39a','S':'#a8e6b8','Z':'#f4a6b7','T':'#d8a6f4'};
-        const tetrominoes = {'I':[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],'O':[[1,1],[1,1]],'T':[[0,1,0],[1,1,1],[0,0,0]],'S':[[0,1,1],[1,1,0],[0,0,0]],'Z':[[1,1,0],[0,1,1],[0,0,0]],'J':[[1,0,0],[1,1,1],[0,0,0]],'L':[[0,0,1],[1,1,1],[0,0,0]]};
-        let tGrid=[], actTetro=null, tScore=0, tInterval=null;
-
-        function resetTetris() {
-            clearInterval(tInterval); tGrid=Array.from({length:20},()=>Array(10).fill(0)); tScore=0; scoreDisplay.innerText="Score: 0";
-            spawnTetromino(); tInterval=setInterval(updateTetris, 400); drawTetris();
-        }
-        function spawnTetromino() { const k=Object.keys(tetrominoes); const t=k[Math.floor(Math.random()*k.length)]; actTetro={mat:tetrominoes[t], name:t, r:0, c:3}; if(!isValidMove(actTetro.mat, actTetro.r, actTetro.c)) clearInterval(tInterval); }
-        function isValidMove(m, r, c) { for(let y=0;y<m.length;y++) for(let x=0;x<m[y].length;x++) if(m[y][x]) { const nr=r+y, nc=c+x; if(nr<0||nr>=20||nc<0||nc>=10||(nr>=0&&tGrid[nr][nc])) return false; } return true; }
-        function updateTetris() { if(isValidMove(actTetro.mat, actTetro.r+1, actTetro.c)) actTetro.r++; else { for(let y=0;y<actTetro.mat.length;y++) for(let x=0;x<actTetro.mat[y].length;x++) if(actTetro.mat[y][x]&&actTetro.r+y>=0) tGrid[actTetro.r+y][actTetro.c+x]=actTetro.name; clearLines(); spawnTetromino(); } drawTetris(); }
-        function clearLines() { let lc=0; for(let r=19;r>=0;r--) if(tGrid[r].every(c=>c!==0)) { tGrid.splice(r,1); tGrid.unshift(Array(10).fill(0)); lc++; r++; } if(lc>0) { tScore+=lc*100; scoreDisplay.innerText="Score: "+tScore; } }
-        function drawTetris() { tCtx.fillStyle=isDark?'#12121c':'#fdfbf9'; tCtx.fillRect(0,0,200,400); for(let r=0;r<20;r++) for(let c=0;c<10;c++) if(tGrid[r][c]) { tCtx.fillStyle=tColors[tGrid[r][c]]; tCtx.fillRect(c*20,r*20,19,19); } if(actTetro) { tCtx.fillStyle=tColors[actTetro.name]; for(let r=0;r<actTetro.mat.length;r++) for(let c=0;c<actTetro.mat[r].length;c++) if(actTetro.mat[r][c]) tCtx.fillRect((actTetro.c+c)*20, (actTetro.r+r)*20, 19, 19); } }
-
-        // INPUTS
-        function handleInput(d) {
-            if(activeGame==='snake' && !changingDirection) {
-                const up=dy===-20, dn=dy===20, rt=dx===20, lt=dx===-20;
-                if(d==='left'&&!rt){dx=-20;dy=0;changingDirection=true;} if(d==='up'&&!dn){dx=0;dy=-20;changingDirection=true;}
-                if(d==='right'&&!lt){dx=20;dy=0;changingDirection=true;} if(d==='down'&&!up){dx=0;dy=20;changingDirection=true;}
-            } else if(activeGame==='tetris' && actTetro) {
-                if(d==='left' && isValidMove(actTetro.mat, actTetro.r, actTetro.c-1)) actTetro.c--;
-                if(d==='right' && isValidMove(actTetro.mat, actTetro.r, actTetro.c+1)) actTetro.c++;
-                if(d==='down' && isValidMove(actTetro.mat, actTetro.r+1, actTetro.c)) actTetro.r++;
-                if(d==='up') { const rot=actTetro.mat.map((v,i)=>actTetro.mat.map(row=>row[i]).reverse()); if(isValidMove(rot, actTetro.r, actTetro.c)) actTetro.mat=rot; }
-                drawTetris();
-            }
-        }
-        window.addEventListener('keydown', e => { if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.code)) e.preventDefault(); const k=e.key; if(k==='ArrowLeft'||k==='a') handleInput('left'); if(k==='ArrowUp'||k==='w') handleInput('up'); if(k==='ArrowRight'||k==='d') handleInput('right'); if(k==='ArrowDown'||k==='s') handleInput('down'); });
-        document.getElementById('btn-up').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('up'); }); document.getElementById('btn-left').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('left'); }); document.getElementById('btn-right').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('right'); }); document.getElementById('btn-down').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('down'); });
-    </script>
+    }
+    window.addEventListener('keydown', e => { if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.code)) e.preventDefault(); const k=e.key; if(k==='ArrowLeft'||k==='a') handleInput('left'); if(k==='ArrowUp'||k==='w') handleInput('up'); if(k==='ArrowRight'||k==='d') handleInput('right'); if(k==='ArrowDown'||k==='s') handleInput('down'); });
+    document.getElementById('btn-up').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('up'); });
+    document.getElementById('btn-left').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('left'); });
+    document.getElementById('btn-right').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('right'); });
+    document.getElementById('btn-down').addEventListener('pointerdown', e => { e.preventDefault(); handleInput('down'); });
+</script>
 </body>
 </html>
